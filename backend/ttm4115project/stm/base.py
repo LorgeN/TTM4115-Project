@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 
 def _set_if_not_none(dict, key, value):
@@ -14,7 +14,7 @@ class Transition:
         targets: Optional[str] = None,
         trigger: Optional[str] = None,
         action: Optional[str] = None,
-        function: Optional[str] = None,
+        function: Optional[Callable] = None,
     ):
         self.source = source
         self.target = target
