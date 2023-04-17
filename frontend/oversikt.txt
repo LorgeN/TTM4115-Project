@@ -6,8 +6,14 @@ Student-page:
 	-  I-rat
 	- T-rat
 	- Kø-system
+		- Join kø
+		- Status i kø
+		-
 
 Student-assistent 
 	- (edit RAT)
 	- Kø-system 
-		- 
+		- Se kø
+		- Skifte kø-status til “hjelp pågår”
+		- Fjerne gruppe fra kø etter hjelp
+		
