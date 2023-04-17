@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, Dict, List, Tuple, Callable
 from ttm4115project.mqtt_handle import MQTTHandle
 from stmpy import Driver, Machine
 
@@ -16,7 +16,7 @@ class Transition:
         targets: Optional[str] = None,
         trigger: Optional[str] = None,
         action: Optional[str] = None,
-        function: Optional[str] = None,
+        function: Optional[Callable] = None,
     ):
         self.source = source
         self.target = target
@@ -60,7 +60,7 @@ class State:
 
         for key, value in self.events.items():
             result[key] = value
-            
+
         return result
 
 
