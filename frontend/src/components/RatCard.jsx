@@ -13,15 +13,26 @@ import {
     HStack
   } from "@chakra-ui/react";
   
-  export const RatCard = () => {
+  export const RatCard = (props) => {
   
+    // TODO: replace dummydata 
       let name = "RAT 7: sequence diagrams"
       let question = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui, nam."
+
+
+      const submit = () => {
+        // TODO: save answers
+      }
+
+      const quit = () => {
+        // TODO: save progredd
+      }
   
     return (
       <Card>
         <CardHeader>
           <Heading size="md">{name}</Heading>
+          <Text >{props.ratType} RAT</Text>
         </CardHeader>
   
         <CardBody>

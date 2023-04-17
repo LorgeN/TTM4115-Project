@@ -6,7 +6,7 @@ export const TakeRat = () => {
   return (
     <Container marginTop={10}>
 
-        <RatCard></RatCard>
+        <RatCard ratType={"Individual"}></RatCard>
         
     </Container>
   );
