@@ -12,20 +12,27 @@ import {
     Button,
     HStack
   } from "@chakra-ui/react";
+  import { useNavigate } from "react-router-dom";
+
   
   export const RatCard = (props) => {
   
     // TODO: replace dummydata 
       let name = "RAT 7: sequence diagrams"
       let question = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui, nam."
+      const navigate = useNavigate();
+
 
 
       const submit = () => {
         // TODO: save answers
+        navigate("/waitingroom");
       }
 
       const quit = () => {
         // TODO: save progredd
+        navigate("/");
+
       }
   
     return (
@@ -62,8 +69,8 @@ import {
         </CardBody>
         <CardFooter >
             <HStack >
-        <Button colorScheme='blue'>Submit</Button>
-        <Button colorScheme='orange'>Quit</Button>
+        <Button onClick={submit} colorScheme='blue'>Submit</Button>
+        <Button onClick={quit} colorScheme='orange'>Quit</Button>
 
             </HStack>
         </CardFooter>

@@ -10,18 +10,28 @@ import {
   Box
 } from "@chakra-ui/react";
 import {useState} from "react"
+import { useNavigate } from "react-router-dom";
+import { TakeRat } from "./TakeRat";
+
 
 export const StudentHome = () => {
 
   const dummyQnum = 4
 
   const [isHelpRequested, setHelpRequested] = useState(false);
+  const navigate = useNavigate();
+
 
   const onRequestHelp = () => {
     setHelpRequested(!isHelpRequested)
     if(isHelpRequested){
       //TODO: send request
     }
+  }
+
+  const startRat = () => {
+    // get the RAT 
+    navigate("/takerat")
   }
 
   return (
@@ -39,14 +49,13 @@ export const StudentHome = () => {
             py={10}
 
           >
-            <Button>Take RAT</Button>
+            <Button onClick={startRat}>Take RAT</Button>
             {/* no need to input reason */} 
             <Button onClick={onRequestHelp}>Request help</Button>
             {isHelpRequested&&(
               <Box marginTop={10} textAlign={"center"} p={4} background={"green.100"} rounded={"2xl"}>
                 <Text>Your place in the queue is:</Text>
                 <Text >{dummyQnum}</Text>
-
               </Box>
             )}
           </VStack>
