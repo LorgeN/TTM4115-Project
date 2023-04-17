@@ -1,5 +1,3 @@
-# TTM4115 Project - Group 8
-
 ## Setup
 
 Recommend creating a virtual environment for the project. This can be done by running the following command:
