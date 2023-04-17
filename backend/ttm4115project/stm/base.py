@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 from ttm4115project.mqtt_handle import MQTTHandle
 from stmpy import Driver, Machine
 
@@ -44,17 +44,23 @@ class State:
         entry: Optional[str] = None,
         exit: Optional[str] = None,
         do: Optional[str] = None,
+        events: Dict[str, str] = {},
     ):
         self.name = name
         self.entry = entry
         self.exit = exit
         self.do = do
+        self.events = events
 
     def to_dict(self):
         result = {"name": self.name}
         _set_if_not_none(result, "entry", self.entry)
         _set_if_not_none(result, "exit", self.exit)
         _set_if_not_none(result, "do", self.do)
+
+        for key, value in self.events.items():
+            result[key] = value
+            
         return result
 
 
@@ -77,6 +83,8 @@ class MachineBase:
     def machine(self) -> Machine:
         if self.__machine is None:
             states, transitions = self.get_definiton()
+            states = [state.to_dict() for state in states]
+            transitions = [transition.to_dict() for transition in transitions]
             self.__machine = Machine(
                 name=self.name, transitions=transitions, states=states, obj=self
             )
