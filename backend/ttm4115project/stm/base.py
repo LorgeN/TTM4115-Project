@@ -1,4 +1,6 @@
-from typing import Optional, Callable
+from typing import Optional, List, Tuple, Callable
+from ttm4115project.mqtt_handle import MQTTHandle
+from stmpy import Driver, Machine
 
 
 def _set_if_not_none(dict, key, value):
@@ -54,3 +56,37 @@ class State:
         _set_if_not_none(result, "exit", self.exit)
         _set_if_not_none(result, "do", self.do)
         return result
+
+
+class MachineBase:
+    def __init__(self, name: str, handle: MQTTHandle) -> None:
+        self.name = name
+        self.handle = handle
+        self.__machine = None
+        self.__driver = None
+
+    def install(self, driver: Driver):
+        self.__driver = driver
+        driver.add_machine(self.machine)
+
+    def uninstall(self):
+        self.machine.terminate()
+        self.__driver = None
+
+    @property
+    def machine(self) -> Machine:
+        if self.__machine is None:
+            states, transitions = self.get_definiton()
+            self.__machine = Machine(
+                name=self.name, transitions=transitions, states=states, obj=self
+            )
+        return self.__machine
+
+    def send_global_event(self, id: str, *args, **kwargs):
+        self.__driver.send(id, *args, **kwargs)
+
+    def send_self_event(self, id: str, *args, **kwargs):
+        self.machine.send(id, *args, **kwargs)
+
+    def get_definiton(self) -> Tuple[List[State], List[Transition]]:
+        raise NotImplementedError()
