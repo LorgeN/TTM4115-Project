@@ -1,0 +1,13 @@
+Log-in
+	- Pick team or Student assistent
+
+
+Student-page:
+	-  I-rat
+	- T-rat
+	- Kø-system
+
+Student-assistent 
+	- (edit RAT)
+	- Kø-system 
+		- 
