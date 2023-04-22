@@ -6,14 +6,15 @@ import { TakeRat } from './pages/TakeRat';
 import { StudentHome } from './pages/StudentHome';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WaitingRoom } from './pages/WaitingRoom';
-
+import { Login } from './pages/Login';
 function App() {
   // 2. Wrap ChakraProvider at the root of your app
   return (
     <ChakraProvider >
   <BrowserRouter>
       <Routes>
-        <Route path="/" element={<StudentHome />}/>
+        <Route path="/" element={<Login />}/>
+        <Route path="/studenthome" element={<StudentHome />}/>
         <Route path="takerat" element={<TakeRat />} />
         <Route path="waitingroom" element={<WaitingRoom />} />
       </Routes>
