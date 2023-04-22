@@ -90,6 +90,13 @@ class MachineBase:
             )
         return self.__machine
 
+    @property
+    def driver(self) -> Driver:
+        if self.__driver is None:
+            raise Exception("Driver not installed")
+
+        return self.__driver
+
     def send_global_event(self, id: str, *args, **kwargs):
         self.__driver.send(id, *args, **kwargs)
 

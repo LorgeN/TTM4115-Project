@@ -17,13 +17,41 @@ class StudentIndividualStm(MachineBase):
             State(
                 "s_individual_waiting_for_ta_question",
                 events={
-                    "system_queue_update": "notify_update",
+                    "system_queue_update": "notify_update(*)",
+                    "message_question_answer": "process_answer(*); next_question()",
                 },
             ),
-            State("s_rat_waiting_others"),
         ]
 
-        transitions = []
+        transitions = [
+            Transition(
+                source="initial",
+                target="s_rat_individual",
+            ),
+            Transition(
+                source="s_rat_individual",
+                target="s_individual_waiting_for_ta_question",
+                trigger="message_request_help",
+                action="notify_ta_new_request()",
+            ),
+            Transition(
+                source="s_individual_waiting_for_ta_question",
+                target="s_rat_individual",
+                trigger="system_request_complete",
+            ),
+            Transition(
+                source="s_individual_waiting_for_ta_question",
+                target="s_rat_individual",
+                trigger="message_request_cancel",
+                action="notify_ta_cancel_request()",
+            ),
+            Transition(
+                source="s_rat_individual",
+                target="final",
+                trigger="system_rat_complete",
+                action="notify_complete()",
+            ),
+        ]
         return states, transitions
 
     def start_rat_question(self):
@@ -48,7 +76,7 @@ class StudentIndividualStm(MachineBase):
             self.send_self_event("system_rat_complete")
             return
 
-        question = self.rat.questions[self.current_question]
+        question: RATQuestion = self.rat.questions[self.current_question]
 
         self.handle.publish(
             MQTTMessage(
@@ -62,7 +90,6 @@ class StudentIndividualStm(MachineBase):
 
     def process_answer(self, answer: int):
         self.answers.append(answer)
-        self.next_question()
 
     def notify_update(self, position: int):
         self.handle.publish(
