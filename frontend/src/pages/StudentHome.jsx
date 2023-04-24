@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import {useState} from "react"
 import { useNavigate } from "react-router-dom";
-import { TakeRat } from "./TakeRat";
 
 
 export const StudentHome = () => {
@@ -37,10 +36,11 @@ export const StudentHome = () => {
   return (
     <Container
       maxW={"4xl"}
-      bg={""}
+      marginTop={"50"}
+      
     >
       {/* TODO: center vertically */}
-      <Card variant={"outline"}>
+      <Card >
         <CardHeader>
           <Heading size="md"> Welcome Back!</Heading>
         </CardHeader>
@@ -49,9 +49,9 @@ export const StudentHome = () => {
             py={10}
 
           >
-            <Button onClick={startRat}>Take RAT</Button>
+            <Button onClick={startRat} colorScheme={"blue"}>Take RAT</Button>
             {/* no need to input reason */} 
-            <Button onClick={onRequestHelp}>Request help</Button>
+            <Button onClick={onRequestHelp} colorScheme={"teal"}>Request help</Button>
             {isHelpRequested&&(
               <Box marginTop={10} textAlign={"center"} p={4} background={"green.100"} rounded={"2xl"}>
                 <Text>Your place in the queue is:</Text>
