@@ -10,7 +10,7 @@ class Facilitator(MachineBase):
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         s_initial = State(name="s_initial", entry="start", events={
             "system_new_request_received": "notify_new_request",
-            "message_request_stats": "send_status"
+            "message_request_status": "send_status"
         })
         s_helping = State(name="s_helping", entry="notify_request_accepted")
         s_editing = State(name="s_editing", events={
@@ -36,7 +36,8 @@ class Facilitator(MachineBase):
         return states, transitions
 
     def start(self) -> None:
-        print("start")
+        self.send_status()
+        self.machine.start_timer("t_timeout", 600000)
 
     def send_status(self) -> None:
         print("send_status")
