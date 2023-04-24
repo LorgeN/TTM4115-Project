@@ -1,33 +1,26 @@
-from stmpy import Machine
-from base import State, Transition
+from stmpy import Machine, Driver
+from ttm4115project.stm.base import State, Transition, MachineBase
+from ttm4115project.stm.student_individual import StudentIndividualStm
+from ttm4115project.mqtt_handle import MQTTHandle
+from typing import Tuple, List
 
 
-class SessionManager:
-    def __init__(self) -> None:
+class SessionManager(MachineBase):
+    def __init__(self, handle: MQTTHandle, driver: Driver) -> None:
+        super().__init__("stm_session_manager", handle)
 
-        s_initial = State(name="s_initial").to_dict()
-        s_accept = State(name="s_accept", entry="session_create").to_dict()
-        s_reject = State(name="s_reject", entry="session_reject").to_dict()
+    def get_definiton(self) -> Tuple[List[State], List[Transition]]:
+        s_initial = State(name="s_initial", events={
+            "auth": "check_auth",
+        })
 
-        t0 = Transition("initial", "s_initial").to_dict()
-        t1 = Transition("s_initial", trigger="auth",
-                        function=self.check_auth, targets="s_accept s_reject").to_dict()
-        t2 = Transition("s_accept", "s_initial",
-                        trigger="session_created").to_dict()
-        t3 = Transition("s_reject", "s_initial",
-                        trigger="session_rejected").to_dict()
+        t0 = Transition("initial", "s_initial")
 
-        states = [s_initial, s_accept, s_reject]
-        transitions = [t0, t1, t2, t3]
+        states = [s_initial]
+        transitions = [t0]
 
-        self.machine = Machine(name="stm_session_manager", obj=self,
-                               transitions=transitions, states=states)
+        return states, transitions
 
-    def check_auth(self, args, kwargs):
-        pass
-
-    def session_create(self):
-        pass
-
-    def session_reject(self):
-        pass
+    def check_auth(self, *args, **kwargs) -> None:
+        # TODO: Check auth, create session
+        print("check_auth:", args, kwargs)
