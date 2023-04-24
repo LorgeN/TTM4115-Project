@@ -1,28 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
-import Container from 'react-bootstrap/Container';
+import * as React from 'react'
+
+// 1. import `ChakraProvider` component
+import { ChakraProvider } from '@chakra-ui/react'
+import { TakeRat } from './pages/TakeRat';
+import { StudentHome } from './pages/StudentHome';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { WaitingRoom } from './pages/WaitingRoom';
+import { Login } from './pages/Login';
 function App() {
+  // 2. Wrap ChakraProvider at the root of your app
   return (
-    <Container>
-    <div className="App">
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <p>
-        Edit <code>src/App.js</code> and save to reload.
-      </p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Learn React
-      </a>
-    </header>
-  </div>
-  </Container>
-    
-  );
+    <ChakraProvider >
+  <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />}/>
+        <Route path="/studenthome" element={<StudentHome />}/>
+        <Route path="takerat" element={<TakeRat />} />
+        <Route path="waitingroom" element={<WaitingRoom />} />
+      </Routes>
+    </BrowserRouter>
+    </ChakraProvider>
+  )
 }
 
 export default App;
