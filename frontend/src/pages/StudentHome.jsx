@@ -7,7 +7,8 @@ import {
   CardBody,
   Heading,
   Text,
-  Box
+  Box,
+  // CloseButton
 } from "@chakra-ui/react";
 import {useState} from "react"
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 
 export const StudentHome = () => {
 
-  const dummyQnum = 4
 
   const [isHelpRequested, setHelpRequested] = useState(false);
   const navigate = useNavigate();
@@ -54,8 +54,8 @@ export const StudentHome = () => {
             <Button onClick={onRequestHelp} colorScheme={"teal"}>Request help</Button>
             {isHelpRequested&&(
               <Box marginTop={10} textAlign={"center"} p={4} background={"green.100"} rounded={"2xl"}>
-                <Text>Your place in the queue is:</Text>
-                <Text >{dummyQnum}</Text>
+                <Text>In queue</Text>
+                {/* <CloseButton size='sm' /> */}
               </Box>
             )}
           </VStack>

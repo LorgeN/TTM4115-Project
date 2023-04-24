@@ -31,7 +31,7 @@ import {
 
       const quit = () => {
         // TODO: save progredd
-        navigate("/");
+        navigate("/studenthome");
 
       }
   
