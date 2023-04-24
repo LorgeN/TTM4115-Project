@@ -7,6 +7,8 @@ import { StudentHome } from './pages/StudentHome';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WaitingRoom } from './pages/WaitingRoom';
 import { Login } from './pages/Login';
+/*import { Connection } from './pages/MQTTExperiment';*/
+import HookMqtt from './components/Hook/'
 function App() {
   // 2. Wrap ChakraProvider at the root of your app
   return (
@@ -17,8 +19,13 @@ function App() {
         <Route path="/studenthome" element={<StudentHome />}/>
         <Route path="takerat" element={<TakeRat />} />
         <Route path="waitingroom" element={<WaitingRoom />} />
+        
+        
+        
       </Routes>
+
     </BrowserRouter>
+    <HookMqtt />
     </ChakraProvider>
   )
 }
