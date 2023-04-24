@@ -13,12 +13,17 @@ class StudentIndividualStm(MachineBase):
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         states = [
-            State("s_rat_individual", entry="start_rat_question"),
+            State(
+                "s_rat_individual",
+                entry="start_rat_question",
+                events={
+                    "message_question_answer": "process_answer(*); next_question()"
+                },
+            ),
             State(
                 "s_individual_waiting_for_ta_question",
                 events={
                     "system_queue_update": "notify_update(*)",
-                    "message_question_answer": "process_answer(*); next_question()",
                 },
             ),
         ]
