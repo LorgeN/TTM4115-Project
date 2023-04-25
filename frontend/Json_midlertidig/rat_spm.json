@@ -1,0 +1,47 @@
+{
+    "spm1": {
+        "beskrivelse": "Dette er et test-spørsmål",
+        "alternativer": [
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": true
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            }
+        ]
+
+    },
+    "spm1": {
+        "beskrivelse": "Dette er et test-spørsmål",
+        "alternativer": [
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": true
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            }
+        ]
+
+    },
+
+},
