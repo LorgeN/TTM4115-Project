@@ -1,14 +1,15 @@
 import { Container, Button } from "@chakra-ui/react";
-import { RatCard } from "../components/RatCard";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import mqtt from "precompiled-mqtt";
+import { TRatCard } from "../components/TRatCard";
 
-export const TakeRat = () => {
+export const TakeTRat = () => {
   const navigate = useNavigate()
+  
   const sporsmaal = { // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
     spm1: {
-      beskrivelse: "Dette er et test-spørsmål",
+      beskrivelse: "Dette er et ",
       alternativer: [
         {
           alt: "Dette er et test-alternativ",
@@ -29,7 +30,7 @@ export const TakeRat = () => {
       ],
     },
     spm2: {
-      beskrivelse: "Dette er et test-spørsmål",
+      beskrivelse: "test-spørsmål",
       alternativer: [
         {
           alt: "Dette er et test-alternativ",
@@ -50,12 +51,14 @@ export const TakeRat = () => {
       ],
     },
   }; // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
+    
 
   const [client, setClient] = useState(null);
   /*const [isSubed, setIsSub] = useState(false);*/
   const [payload, setPayload] = useState({});
   const [connectStatus, setConnectStatus] = useState("Connect");
   const [data, setData] = useState({}); //data fra RAT
+  
 
   const connect = () => {
     //const url = `ws://broker.emqx.io:8083/mqtt`;
@@ -73,7 +76,6 @@ export const TakeRat = () => {
     options.username = "komsys";
     options.password = "komsys123";
     console.log(options);
-
     setClient(mqtt.connect("ws://broker.emqx.io:8083/mqtt")); //#DENNE FUNKER I DET MINSTE
     //setClient(mqtt.connect("ws://mqtt-broker.tandberg.org:9001"), options) //# DENNE FUNKER IKKE (muligens noe funky med connection)
   };
@@ -88,14 +90,14 @@ export const TakeRat = () => {
       }
       console.log("publishing");
 
-      client.publish("takerat", JSON.stringify(data), 1, (error) => {
+      client.publish("takeTrat", JSON.stringify(data), 1, (error) => {
         if (error) {
           console.log("Publish error: ", error);
         } else {
-          navigate("/waitingroom")
+          navigate("/studenthome")
         }
       });
-      client.publish("takerat", "yes", 1, (error) => {
+      client.publish("takeTrat", "yes", 1, (error) => {
         if (error) {
           console.log("Publish error: ", error);
         }
@@ -137,11 +139,11 @@ export const TakeRat = () => {
   return (
     <Container marginTop={10}>
 
-      <RatCard
-        ratType={"Individual"}
+      <TRatCard
+        ratType={"Team"}
         sporsmaal={sporsmaal}
         setData={setData}
-      ></RatCard>
+      ></TRatCard>
     </Container>
   );
 };
