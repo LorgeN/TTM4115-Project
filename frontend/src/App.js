@@ -13,9 +13,9 @@ import HookMqtt from './components/Hook/'
 function App() {
   // 2. Wrap ChakraProvider at the root of your app
   return (
-    <ChakraProvider >
-  <BrowserRouter>
-      <Routes>
+    <ChakraProvider>
+  <BrowserRouter >
+      <Routes >
         <Route path="/" element={<Login />}/>
         <Route path="/studenthome" element={<StudentHome />}/>
         <Route path="takerat" element={<TakeRat />} />
@@ -27,7 +27,6 @@ function App() {
       </Routes>
 
     </BrowserRouter>
-    <HookMqtt />
     </ChakraProvider>
   )
 }
