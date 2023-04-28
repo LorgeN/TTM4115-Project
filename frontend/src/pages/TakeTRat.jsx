@@ -5,7 +5,6 @@ import mqtt from "precompiled-mqtt";
 import { TRatCard } from "../components/TRatCard";
 
 export const TakeTRat = () => {
-  const navigate = useNavigate()
   
   const sporsmaal = { // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
     spm1: {
@@ -93,8 +92,10 @@ export const TakeTRat = () => {
       client.publish("takeTrat", JSON.stringify(data), 1, (error) => {
         if (error) {
           console.log("Publish error: ", error);
-        } else {
-          navigate("/studenthome")
+        } 
+        else {
+        //   navigate("/studenthome")
+        console.log("Publish success")
         }
       });
       client.publish("takeTrat", "yes", 1, (error) => {
@@ -102,6 +103,7 @@ export const TakeTRat = () => {
           console.log("Publish error: ", error);
         }
       });
+      
     };
 
 
