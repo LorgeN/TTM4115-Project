@@ -4,14 +4,19 @@ import { HStack } from '@chakra-ui/react';
 import {
     Text,
   } from "@chakra-ui/react";
+import { useNavigate } from 'react-router-dom';
 
 const ExpiredNotice = () => {
-    return (
-      <div className="expired-notice">
-        <span>Expired!!!</span>
-        <p>Please select a future date and time.</p>
-      </div>
-    );
+    
+    const navigate = useNavigate()
+    navigate("/studenthome")
+    // return (
+    //   <div className="expired-notice">
+    //     <span>Expired!!!</span>
+    //     <p>Please select a future date and time.</p>
+    //   </div>
+    // );
+    
   };
 
   const ShowCounter = ({ days, hours, minutes, seconds }) => {
@@ -33,11 +38,15 @@ const DateTimeDisplay = ({ value, isDanger }) => {
   );
 };
 
-export const CountdownTimer = ({ targetDate }) => {
+export const CountdownTimer = ({ targetDate, setIsTimerExpired }) => {
   const [days, hours, minutes, seconds] = useCountdown(targetDate);
+  const navigate = useNavigate()
 
   if (minutes + seconds <= 0) {
-    return <ExpiredNotice />;
+    setIsTimerExpired(true)
+    // navigate("/studenthome")
+    // return <ExpiredNotice />;
+    return
   } else {
     return (
       <ShowCounter
