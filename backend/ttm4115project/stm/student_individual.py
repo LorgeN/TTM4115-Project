@@ -1,7 +1,10 @@
 from ttm4115project.stm.base import State, Transition, MachineBase
 from ttm4115project.rat import RAT, RATQuestion
 from ttm4115project.mqtt_handle import MQTTHandle, MQTTMessage
+from ttm4115project.utils.logging import create_logger
 from typing import List, Tuple
+
+LOGGER = create_logger(__name__)
 
 
 class StudentIndividualStm(MachineBase):
@@ -12,21 +15,7 @@ class StudentIndividualStm(MachineBase):
         self.answers = []
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
-        states = [
-            State(
-                "s_rat_individual",
-                entry="start_rat_question",
-                events={
-                    "message_question_answer": "process_answer(*); next_question()"
-                },
-            ),
-            State(
-                "s_individual_waiting_for_ta_question",
-                events={
-                    "system_queue_update": "notify_update(*)",
-                },
-            ),
-        ]
+        states = [State("s_rat_individual", entry="start_rat_question")]
 
         transitions = [
             Transition(
@@ -35,26 +24,9 @@ class StudentIndividualStm(MachineBase):
             ),
             Transition(
                 source="s_rat_individual",
-                target="s_individual_waiting_for_ta_question",
-                trigger="message_request_help",
-                action="notify_ta_new_request()",
-            ),
-            Transition(
-                source="s_individual_waiting_for_ta_question",
-                target="s_rat_individual",
-                trigger="system_request_complete",
-            ),
-            Transition(
-                source="s_individual_waiting_for_ta_question",
-                target="s_rat_individual",
-                trigger="message_request_cancel",
-                action="notify_ta_cancel_request()",
-            ),
-            Transition(
-                source="s_rat_individual",
-                target="final",
-                trigger="system_rat_complete",
-                action="notify_complete()",
+                targets="s_rat_individual final",
+                trigger="message_question_answer",
+                function=self.process_answer,
             ),
         ]
         return states, transitions
@@ -75,11 +47,14 @@ class StudentIndividualStm(MachineBase):
             )
         )
 
-    def next_question(self):
+    def process_answer(self, answer: int):
+        LOGGER.debug("Received answer: %s", answer)
+        self.answers.append(answer)
+
         self.current_question += 1
         if self.current_question >= len(self.rat.questions):
-            self.send_self_event("system_rat_complete")
-            return
+            self.send_global_event("system_student_rat_completed", name=self.name)
+            return "final"
 
         question: RATQuestion = self.rat.questions[self.current_question]
 
@@ -93,26 +68,4 @@ class StudentIndividualStm(MachineBase):
             )
         )
 
-    def process_answer(self, answer: int):
-        self.answers.append(answer)
-
-    def notify_update(self, position: int):
-        self.handle.publish(
-            MQTTMessage(
-                event="message_queue_update",
-                data={
-                    "position": position,
-                },
-            )
-        )
-
-    def notify_ta_new_request(self):
-        self.send_global_event(
-            "system_new_ta_request", name=self.name, question=self.current_question
-        )
-
-    def notify_ta_cancel_request(self):
-        self.send_global_event("system_cancel_ta_request", name=self.name)
-
-    def notify_complete(self):
-        self.send_global_event("system_student_rat_completed", name=self.name)
+        return "s_rat_individual"

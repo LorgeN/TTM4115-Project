@@ -1,16 +1,22 @@
 from dotenv import load_dotenv
-from ttm4115project.mqtt_handle import MQTTWrapperClient, MQTTMessage, MQTTHandle
-from typing import Optional
 
 load_dotenv()  # take environment variables from .env.
 
+from ttm4115project.mqtt_handle import MQTTWrapperClient
+from ttm4115project.stm.session_manager import SessionManager
+from ttm4115project.rat import read_rat_from_json
+from stmpy import Driver
+
+
+rat = read_rat_from_json("example_rat.json")
+
 client = MQTTWrapperClient()
-def handle_message(message: MQTTMessage) -> Optional[MQTTMessage]:
-    print(message.to_dict())
-    return MQTTMessage(event="pong")
+driver = Driver()
 
-client.create_handle("ttm4115project/test", handle_message).subscribe()
-client.publish_message("ttm4115project/test/inbound", MQTTMessage(event="ping"))
+# Create session manager state machine and install it on the driver
+session_manager = SessionManager(client, rat)
+session_manager.install(driver)
 
-while True:
-    pass
+# Start the driver
+driver.start()
+driver.wait_until_finished()

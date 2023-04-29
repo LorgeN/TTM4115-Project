@@ -4,7 +4,7 @@ import os
 import paho.mqtt.client as mqtt
 import json
 
-LOGGER = create_logger(__name__, "app.log")
+LOGGER = create_logger(__name__)
 
 
 class MQTTMessage:
@@ -18,7 +18,7 @@ class MQTTMessage:
 
     @classmethod
     def from_dict(cls, data: Dict[str, str]) -> "MQTTMessage":
-        return cls(data["event"], data["data"])
+        return cls(data["event"], data.get("data", {}))
 
     def to_dict(self) -> Dict[str, str]:
         return {"event": self.event, "data": self.data}
@@ -32,7 +32,7 @@ class MQTTHandle:
         self,
         client: "MQTTWrapperClient",
         topic: str,
-        on_message: Callable[[MQTTMessage], Optional[MQTTMessage]],
+        on_message: Callable[[MQTTMessage], Optional[MQTTMessage]] = None,
     ) -> None:
         self.client = client
         self.topic = topic
@@ -47,10 +47,15 @@ class MQTTHandle:
         return f"{self.topic}/outbound"
 
     def subscribe(self) -> None:
+        if self.on_message is None:
+            raise ValueError("on_message cannot be None")
+
+        LOGGER.info(f"Subscribing to {self.inbound_topic}")
         self.client.handles[self.inbound_topic] = self
         self.client.client.subscribe(self.inbound_topic)
 
     def unsubscribe(self) -> None:
+        LOGGER.info(f"Unsubscribing from {self.inbound_topic}")
         self.client.handles.pop(self.inbound_topic)
         self.client.client.unsubscribe(self.inbound_topic)
 
@@ -73,6 +78,10 @@ class MQTTWrapperClient:
         mqtt_username = os.getenv("MQTT_USERNAME", None)
         mqtt_password = os.getenv("MQTT_PASSWORD", None)
 
+        # Allows us to specify a "namespace" for our application to easily avoid
+        # topic collisions
+        self.base_topic = os.getenv("MQTT_BASE_TOPIC", "ttm4115project")
+
         self.client = mqtt.Client(
             client_id="ttm4115project-backend", reconnect_on_failure=True
         )
@@ -84,7 +93,7 @@ class MQTTWrapperClient:
         self.client.on_message = self.__on_message
 
         self.client.will_set(
-            "ttm4115project/status",
+            f"{self.base_topic}/status",
             json.dumps(MQTTMessage(event="offline").to_dict()),
             qos=1,
         )
@@ -94,9 +103,11 @@ class MQTTWrapperClient:
         self.handles = {}
 
     def create_handle(
-        self, topic: str, on_message: Callable[[MQTTMessage], Optional[MQTTMessage]]
+        self,
+        topic: str,
+        on_message: Callable[[MQTTMessage], Optional[MQTTMessage]] = None,
     ) -> MQTTHandle:
-        return MQTTHandle(self, topic, on_message)
+        return MQTTHandle(self, f"{self.base_topic}/{topic}", on_message)
 
     def publish_message(self, topic: str, message: MQTTMessage) -> None:
         self.client.publish(topic, json.dumps(message.to_dict()), qos=2)
@@ -116,6 +127,11 @@ class MQTTWrapperClient:
 
         if message.topic in self.handles:
             handle = self.handles[message.topic]
-            handle._on_message(MQTTMessage.from_str(message.payload))
+
+            try:
+                message = MQTTMessage.from_str(message.payload)
+                handle._on_message(message)
+            except Exception as e:
+                LOGGER.exception(f"Error while handling message")
         else:
             LOGGER.warn(f"Received message on unknown topic {message.topic}")

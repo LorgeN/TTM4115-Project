@@ -1,6 +1,24 @@
 from typing import Optional, Dict, List, Tuple, Callable
-from ttm4115project.mqtt_handle import MQTTHandle
+from ttm4115project.mqtt_handle import MQTTHandle, MQTTMessage
+from ttm4115project.utils.logging import create_logger
 from stmpy import Driver, Machine
+
+LOGGER = create_logger(__name__)
+
+
+def make_mqtt_callback(
+    driver: Driver, machines: List[str]
+) -> Callable[[MQTTMessage], Optional[MQTTMessage]]:
+    def callback(message: MQTTMessage) -> Optional[MQTTMessage]:
+        event = f"message_{message.event}"
+        data = message.data
+        for machine in machines:
+            # This is the wrong usage of kwargs, but its how the stmpy library works
+            LOGGER.info(f"Sending {event} to {machine} with data {data}")
+            driver.send(event, machine, kwargs=data)
+        return None
+
+    return callback
 
 
 def _set_if_not_none(dict, key, value):
@@ -12,7 +30,7 @@ class Transition:
     def __init__(
         self,
         source: str,
-        target: str,
+        target: Optional[str] = None,
         targets: Optional[str] = None,
         trigger: Optional[str] = None,
         action: Optional[str] = None,
@@ -28,8 +46,8 @@ class Transition:
     def to_dict(self):
         result = {
             "source": self.source,
-            "target": self.target,
         }
+        _set_if_not_none(result, "target", self.target)
         _set_if_not_none(result, "targets", self.targets)
         _set_if_not_none(result, "trigger", self.trigger)
         _set_if_not_none(result, "action", self.action)
@@ -71,13 +89,26 @@ class MachineBase:
         self.__machine = None
         self.__driver = None
 
-    def install(self, driver: Driver):
+    def make_mqtt_callback(self, driver: Driver):
+        return make_mqtt_callback(driver, [self.name])
+
+    def install(self, driver: Driver, subscribe: bool = True):
         self.__driver = driver
         driver.add_machine(self.machine)
+        LOGGER.debug(f"Installed {self.name} with driver {driver}")
 
-    def uninstall(self):
+        if subscribe:
+            if self.handle.on_message is None:
+                self.handle.on_message = self.make_mqtt_callback(driver)
+
+            self.handle.subscribe()
+
+    def uninstall(self, unsubscribe: bool = True):
         self.machine.terminate()
         self.__driver = None
+
+        if unsubscribe:
+            self.handle.unsubscribe()
 
     @property
     def machine(self) -> Machine:
@@ -98,10 +129,13 @@ class MachineBase:
         return self.__driver
 
     def send_global_event(self, id: str, *args, **kwargs):
-        self.__driver.send(id, *args, **kwargs)
+        LOGGER.debug(f"{self.name}: Sending {id} to all machines")
+        for stm in Driver._stms_by_id.keys():
+            self.__driver.send(id, stm, args=args, kwargs=kwargs)
 
     def send_self_event(self, id: str, *args, **kwargs):
-        self.machine.send(id, *args, **kwargs)
+        LOGGER.debug(f"{self.name}: Sending {id} to {self.name}")
+        self.machine.send(id, args=args, kwargs=kwargs)
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         raise NotImplementedError()

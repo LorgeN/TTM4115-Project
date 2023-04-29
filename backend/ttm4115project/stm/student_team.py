@@ -20,38 +20,14 @@ class StudentTeamStm(MachineBase):
                 events={
                     "message_question_answer": "process_answer(*)",
                     "message_answer_confirmed": "confirm_answer()",
-                }
-            ),
-            State(
-                name="s_team_waiting_for_ta_question",
-                entry="notify_ta_new_request(); notify_team_help_req()",
-                events={
-                    "system_queue_update": "notify_update(*)",
                 },
-            )
+            ),
         ]
 
         transitions = [
             Transition(
                 source="initial",
                 target="s_rat_team",
-            ),
-            Transition(
-                source="s_rat_team",
-                target="s_team_waiting_for_ta_question",
-                trigger="message_request_help",
-                action="notify_ta_new_request()",
-            ),
-            Transition(
-                source="s_team_waiting_for_ta_question",
-                target="s_rat_team",
-                trigger="system_request_complete",
-            ),
-            Transition(
-                source="s_team_waiting_for_ta_question",
-                target="s_rat_team",
-                trigger="message_request_cancel",
-                action="notify_ta_cancel_request()",
             ),
             Transition(
                 source="s_rat_team",
@@ -108,18 +84,19 @@ class StudentTeamStm(MachineBase):
                 event="message_question_answer_select",
                 data={
                     "answer": answer,
-                }
+                },
             )
         )
 
     def confirm_answer(self):
-        correct = self.current_answer == self.rat.questions[self.current_question].correct_answer
+        correct = (
+            self.current_answer
+            == self.rat.questions[self.current_question].correct_answer
+        )
         self.handle.publish(
             MQTTMessage(
-                event="message_question_answer_confirm",
-                data={
-                    "is_correct": correct
-                })
+                event="message_question_answer_confirm", data={"is_correct": correct}
+            )
         )
 
         self.previous_answers.append(self.current_answer)
@@ -150,27 +127,3 @@ class StudentTeamStm(MachineBase):
                 },
             )
         )
-
-    def notify_team_help_req(self):
-        self.handle.publish(
-            MQTTMessage(
-                event="message_team_help_request",
-            )
-        )
-
-    def notify_ta_new_request(self):
-        self.send_global_event(
-            "system_new_ta_request", name=self.name, question=self.current_question
-        )
-
-    def notify_ta_cancel_request(self):
-        self.send_global_event("system_cancel_ta_request", name=self.name)
-
-        self.handle.publish(
-            MQTTMessage(
-                event="message_team_help_cancelled",
-            )
-        )
-
-    def notify_complete(self):
-        self.send_global_event("system_student_rat_completed", name=self.name)
