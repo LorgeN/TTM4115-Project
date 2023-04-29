@@ -15,6 +15,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { useState } from "react";
+// import {RatTimer} from "./RatTimer"
+import { CountdownTimer } from "./RatTimer.jsx";
 
 export const RatCard = (props) => {
   const { register, handleSubmit, errors, reset, control } = useForm();
@@ -38,11 +40,17 @@ export const RatCard = (props) => {
     navigate("/studenthome");
   };
 
+  const getTime = () => { // Replace with getting actual time. submit on expire 
+    const time = new Date();
+    return time.setSeconds(time.getSeconds() + 1200);
+  }
+
   return (
     <Card>
       <CardHeader>
         <Heading size="md">{name}</Heading>
         <Text>{props.ratType} RAT</Text>
+        <CountdownTimer targetDate={getTime()}></CountdownTimer>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         {Object.keys(props.sporsmaal).map((key, i) => {
