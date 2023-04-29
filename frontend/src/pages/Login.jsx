@@ -100,6 +100,7 @@ export const Login = () => {
                   colorScheme={"orange"}
                   maxW="960px"
                   mx="auto"
+                  onClick={()=>navigate("/taHome")}
                 >
                   Join as student assistant
                 </Button>
