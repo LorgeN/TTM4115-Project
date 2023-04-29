@@ -7,12 +7,11 @@ import {
   VStack,
   HStack,
   IconButton,
-  Box,
-  Center,
 } from "@chakra-ui/react";
 
 import { CheckIcon } from "@chakra-ui/icons";
 import { useState } from "react";
+import { StatusCard } from "../components/StatusCard";
 
 export const TaHome = () => {
   // TODO: publish and subscribe
@@ -81,71 +80,8 @@ export const TaHome = () => {
             <VStack minW={"50%"}>
               <Heading>RAT status</Heading>
 
-              <Card
-                shadow={"lg"}
-                backgroundColor={"gray.50"}
-                p={7}
-                minW={"60%"}
-              >
-                <Center>
-                    <VStack spacing={5}>
-
-                <Heading
-                size={"md"}
-                >
-                Individual RAT
-              </Heading>
-                <Heading
-                color={"green"}
-                size={"md"}
-                >
-                {/* TODO Replace */}
-                7/42 
-              </Heading>
-                <Heading
-                color={"gray.600"}
-                size={"sm"}
-                >
-                Students have completed
-              </Heading>
-                  </VStack>
-
-
-                </Center>
-              </Card>
-              <Card
-                shadow={"lg"}
-                backgroundColor={"gray.50"}
-                p={7}
-                minW={"60%"}
-
-              >
-                <Center>
-                    <VStack spacing={5}>
-
-                <Heading
-                size={"md"}
-                >
-                Team RAT
-              </Heading>
-                <Heading
-                color={"green"}
-                size={"md"}
-                >
-                {/* TODO Replace */}
-                3/16 
-              </Heading>
-                <Heading
-                color={"gray.600"}
-                size={"sm"}
-                >
-                Teams have completed
-              </Heading>
-                  </VStack>
-
-
-                </Center>
-              </Card>
+              <StatusCard type={"individual"}></StatusCard>
+             <StatusCard type={"team"}></StatusCard>
             </VStack>
           </HStack>
         </CardBody>
