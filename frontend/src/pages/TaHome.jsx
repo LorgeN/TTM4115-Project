@@ -7,14 +7,17 @@ import {
   VStack,
   HStack,
   IconButton,
+  Box,
+  Center,
 } from "@chakra-ui/react";
 
 import { CheckIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 
 export const TaHome = () => {
-
-    // TODO: publish and subscribe 
+  // TODO: publish and subscribe
+  // TODO: seperate Q cards as own component
+  // TODO: seperate status cards as own component
 
   const [dummyQ, setDummyQ] = useState([2, 5, 7, 1, 8, 7, 6]);
 
@@ -61,17 +64,88 @@ export const TaHome = () => {
           </Heading> */}
         </CardHeader>
         <CardBody paddingBottom={20}>
-          <VStack>
-            <Heading>Assistance queue</Heading>
-            <Heading
-              color={"gray.600"}
-              size={"sm"}
-            >
-              Queue length: {dummyQ.length}
-            </Heading>
+          <HStack>
+            <VStack minW={"50%"}>
+              <Heading>Assistance queue</Heading>
+              <Heading
+                color={"gray.600"}
+                size={"sm"}
+              >
+                Queue length: {dummyQ.length}
+              </Heading>
 
-            {dummyQ.map((group, i) => getCard(i, group))}
-          </VStack>
+              {dummyQ.map((group, i) => getCard(i, group))}
+            </VStack>
+            <VStack minW={"50%"}>
+              <Heading>RAT status</Heading>
+
+              <Card
+                shadow={"lg"}
+                backgroundColor={"gray.50"}
+                p={7}
+                minW={"60%"}
+              >
+                <Center>
+                    <VStack spacing={5}>
+
+                <Heading
+                size={"md"}
+                >
+                Individual RAT
+              </Heading>
+                <Heading
+                color={"green"}
+                size={"md"}
+                >
+                {/* TODO Replace */}
+                7/42 
+              </Heading>
+                <Heading
+                color={"gray.600"}
+                size={"sm"}
+                >
+                Students have completed
+              </Heading>
+                  </VStack>
+
+
+                </Center>
+              </Card>
+              <Card
+                shadow={"lg"}
+                backgroundColor={"gray.50"}
+                p={7}
+                minW={"60%"}
+
+              >
+                <Center>
+                    <VStack spacing={5}>
+
+                <Heading
+                size={"md"}
+                >
+                Team RAT
+              </Heading>
+                <Heading
+                color={"green"}
+                size={"md"}
+                >
+                {/* TODO Replace */}
+                3/16 
+              </Heading>
+                <Heading
+                color={"gray.600"}
+                size={"sm"}
+                >
+                Teams have completed
+              </Heading>
+                  </VStack>
+
+
+                </Center>
+              </Card>
+            </VStack>
+          </HStack>
         </CardBody>
       </Card>
     </Container>
