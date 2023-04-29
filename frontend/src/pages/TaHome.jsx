@@ -19,7 +19,7 @@ export const TaHome = () => {
   // TODO: seperate Q cards as own component
   // TODO: seperate status cards as own component
 
-  const [dummyQ, setDummyQ] = useState([2, 5, 7, 1, 8, 7, 6]);
+  const [dummyQ, setDummyQ] = useState([2, 5, 7, 1, 8, 7, 6, 4, 13, 23, 21]);
 
   const helped = () => {
     let cpy = [...dummyQ];
@@ -73,8 +73,10 @@ export const TaHome = () => {
               >
                 Queue length: {dummyQ.length}
               </Heading>
-
+                <VStack maxH={450} overflow={"scroll"}>
               {dummyQ.map((group, i) => getCard(i, group))}
+
+                </VStack>
             </VStack>
             <VStack minW={"50%"}>
               <Heading>RAT status</Heading>
