@@ -1,4 +1,4 @@
-from ttm4115project.stm.base import State, Transition, MachineBase
+from ttm4115project.stm.base import State, Transition, MachineBase, HelpRequest
 from ttm4115project.mqtt_handle import MQTTHandle, MQTTMessage
 from ttm4115project.utils.logging import create_logger
 from typing import Tuple, List
@@ -7,8 +7,11 @@ LOGGER = create_logger(__name__)
 
 
 class Facilitator(MachineBase):
-    def __init__(self, name: str, handle: MQTTHandle) -> None:
+    def __init__(
+        self, name: str, handle: MQTTHandle, help_requests: List[HelpRequest]
+    ) -> None:
         super().__init__(name, handle)
+        self.help_requests = help_requests
         self.busy = False
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
@@ -16,19 +19,15 @@ class Facilitator(MachineBase):
             name="s_initial",
             entry="start",
             events={
-                "system_new_request_received": "notify_new_request(*)",
-                "system_request_accepted": "notify_request_accepted(*)",
-                "system_request_completed": "notify_request_completed(*)",
-                "message_request_status": "send_status",
+                "system_any_help_request": "any_request(*)",
+                "message_request_status": "send_status()",
             },
         )
         s_helping = State(
             name="s_helping",
             events={
-                "system_new_request_received": "notify_new_request(*)",
-                "system_request_accepted": "notify_request_accepted(*)",
-                "system_request_completed": "notify_request_completed(*)",
-                "message_request_status": "send_status",
+                "system_any_help_request": "any_request(*)",
+                "message_request_status": "send_status()",
             },
         )
         s_editing = State(
@@ -39,33 +38,36 @@ class Facilitator(MachineBase):
             },
         )
 
-        t0 = Transition("initial", "s_initial")
+        t0 = Transition(source="initial", target="s_initial")
         t1 = Transition(
-            "s_initial",
-            "s_helping",
+            source="s_initial",
+            target="s_helping",
             trigger="message_request_accept",
-            action="request_accept(*)",
+            action="request_accept()",
         )
         t2 = Transition(
-            "s_helping",
-            "s_initial",
+            source="s_helping",
+            target="s_initial",
             trigger="message_request_completed",
-            action="request_complete(*)",
+            action="request_completed()",
         )
         t3 = Transition(
-            "s_initial",
-            "s_editing",
+            source="s_initial",
+            target="s_editing",
             trigger="message_create_rat",
             action="create_new_rat",
         )
         t4 = Transition(
-            "s_initial",
-            "s_editing",
+            source="s_initial",
+            target="s_editing",
             trigger="message_edit_rat",
             action="start_editing_rat",
         )
         t5 = Transition(
-            "s_editing", "s_initial", trigger="message_rat_complete", action="save_rat"
+            source="s_editing",
+            target="s_initial",
+            trigger="message_rat_complete",
+            action="save_rat",
         )
 
         states = [s_initial, s_helping, s_editing]
@@ -79,56 +81,30 @@ class Facilitator(MachineBase):
 
     def send_status(self) -> None:
         self.handle.publish(
-            MQTTMessage(event="message_status", data={"busy": self.busy})
+            MQTTMessage(
+                event="message_status",
+                data={
+                    "busy": self.busy,
+                },
+            )
         )
 
-    def request_accept(self, *args, **kwargs) -> None:
-        if not "group" in kwargs:
-            LOGGER.error("No group in help request")
-            return
+    def request_accept(self) -> None:
+        if len(self.help_requests) > 0:
+            request = self.help_requests[0]
+            self.send_event(
+                "stm_session_manager",
+                "system_request_processed",
+                student=request.student,
+                team=request.team,
+            )
+            self.busy = True
 
-        self.send_global_event("system_request_accepted", group=kwargs["group"])
-        self.busy = True
-        LOGGER.debug("Accepted help request from group: %s", kwargs["group"])
-
-    def request_complete(self, *args, **kwargs) -> None:
-        if not "group" in kwargs:
-            LOGGER.error("No group in help request")
-            return
-
-        self.send_global_event("system_request_completed", group=kwargs["group"])
+    def request_completed(self) -> None:
         self.busy = False
-        LOGGER.debug("Completed help request from group: %s", kwargs["group"])
 
-    def notify_new_request(self, *args, **kwargs) -> None:
-        if not "group" in kwargs:
-            LOGGER.error("No group in help request")
-            return
-
-        group = kwargs["group"]
-        self.handle.publish(
-            MQTTMessage(event="message_new_request", data={"group": group})
-        )
-
-    def notify_request_accepted(self, *args, **kwargs) -> None:
-        if not "group" in kwargs:
-            LOGGER.error("No group in help request")
-            return
-
-        group = kwargs["group"]
-        self.handle.publish(
-            MQTTMessage(event="message_request_accepted", data={"group": group})
-        )
-
-    def notify_request_completed(self, *args, **kwargs) -> None:
-        if not "group" in kwargs:
-            LOGGER.error("No group in help request")
-            return
-
-        group = kwargs["group"]
-        self.handle.publish(
-            MQTTMessage(event="message_request_completed", data={"group": group})
-        )
+    def any_request(self, is_any: bool) -> None:
+        self.handle.publish(MQTTMessage(event="message_any_request", data=is_any))
 
     def create_new_rat(self) -> None:
         print("create_new_rat")
