@@ -27,7 +27,7 @@ export const RatCard = (props) => {
     // console.log("EXPIRED")
     // handleSubmit()
     // FINN EN MÅTE Å SUBMITTE FORMEN 
-    navigate("/studenthome")
+    navigate("/waitingroom")
    }
  },[isTimerExpired]); 
 
