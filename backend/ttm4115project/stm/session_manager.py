@@ -1,12 +1,18 @@
 from stmpy import Machine, Driver
 from ttm4115project.stm.base import State, Transition, MachineBase, make_mqtt_callback
 from ttm4115project.stm.student import StudentStm
-from ttm4115project.mqtt_handle import MQTTHandle, MQTTWrapperClient
+from ttm4115project.mqtt_handle import MQTTHandle, MQTTWrapperClient, MQTTMessage
 from ttm4115project.utils.logging import create_logger
 from ttm4115project.rat import RAT
 from typing import Tuple, List
 
 LOGGER = create_logger(__name__)
+
+
+class HelpRequest:
+    def __init__(self, student: str, team: str) -> None:
+        self.student = student
+        self.team = team
 
 
 class SessionManager(MachineBase):
@@ -29,6 +35,7 @@ class SessionManager(MachineBase):
             name="s_initial",
             events={
                 "message_auth": "check_auth(*)",
+                "system_request_help": "process_help_request(*)",
             },
         )
 
@@ -38,6 +45,9 @@ class SessionManager(MachineBase):
         transitions = [t0]
 
         return states, transitions
+
+    def process_help_request(self, student: str, team: str):
+        pass
 
     def check_auth(self, *args, **kwargs) -> None:
         if "scope" not in kwargs:
@@ -62,8 +72,9 @@ class SessionManager(MachineBase):
 
     def _make_new_student_session(self, team_id: str, student_id: str) -> None:
         print("Making new student session")
-        handle = self.client.create_handle(f"student/{team_id}/{student_id}")
-        stm = StudentStm(student_id, handle, self.rat)
+        topic = f"student/{team_id}/{student_id}"
+        handle = self.client.create_handle(topic)
+        stm = StudentStm(student_id, team_id, handle, self.rat)
         stm.install(self.driver)
 
         self.student_sessions[student_id] = stm
@@ -74,6 +85,17 @@ class SessionManager(MachineBase):
             self.teams[team_id].append(student_id)
 
         print(f"Created session for student {student_id} in team {team_id}")
+        self.handle.publish(
+            MQTTMessage(
+                event="session_created",
+                data={
+                    "student_id": student_id,
+                    "team_id": team_id,
+                    "topic_inbound": f"{topic}/inbound",
+                    "topic_outbound": f"{topic}/outbound",
+                },
+            )
+        )
 
     def _make_new_facilitator_session(self, facilitator_id: str) -> None:
         # TODO

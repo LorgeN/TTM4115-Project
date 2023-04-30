@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Optional
+from typing import Dict, Callable, Optional, List
 from ttm4115project.utils.logging import create_logger
 import os
 import paho.mqtt.client as mqtt
@@ -69,6 +69,21 @@ class MQTTHandle:
 
     def __repr__(self) -> str:
         return f"MQTTHandle(topic={self.topic}, on_message={self.on_message})"
+
+
+class MergedMQTTHandle:
+    def __init__(self, handles: List[MQTTHandle]) -> None:
+        self.handles = handles
+
+    def subscribe(self) -> None:
+        pass
+
+    def unsubscribe(self) -> None:
+        pass
+
+    def publish(self, message: MQTTMessage) -> None:
+        for handle in self.handles:
+            handle.publish(message)
 
 
 class MQTTWrapperClient:

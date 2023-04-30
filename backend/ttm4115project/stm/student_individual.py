@@ -39,7 +39,7 @@ class StudentIndividualStm(MachineBase):
 
         self.handle.publish(
             MQTTMessage(
-                event="message_new_question",
+                event="new_question",
                 data={
                     "question": question.question,
                     "answers": question.answers,
@@ -60,7 +60,7 @@ class StudentIndividualStm(MachineBase):
 
         self.handle.publish(
             MQTTMessage(
-                event="message_new_question",
+                event="new_question",
                 data={
                     "question": question.question,
                     "answers": question.answers,
