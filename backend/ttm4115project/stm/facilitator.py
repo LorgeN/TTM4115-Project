@@ -100,6 +100,13 @@ class Facilitator(MachineBase):
             )
             self.busy = True
 
+            self.handle.publish(
+                MQTTMessage(
+                    event="message_request_accepted",
+                    data={"student": request.student, "team": request.team},
+                )
+            )
+
     def request_completed(self) -> None:
         self.busy = False
 
