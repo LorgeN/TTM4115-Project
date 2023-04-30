@@ -1,7 +1,8 @@
 from stmpy import Machine, Driver
 from ttm4115project.stm.base import State, Transition, MachineBase, HelpRequest
 from ttm4115project.stm.student import StudentStm
-from ttm4115project.mqtt_handle import MQTTWrapperClient, MQTTMessage
+from ttm4115project.stm.student_team import StudentTeamStm
+from ttm4115project.mqtt_handle import MQTTWrapperClient, MQTTMessage, MergedMQTTHandle
 from ttm4115project.stm.facilitator import Facilitator
 from ttm4115project.utils.logging import create_logger
 from ttm4115project.rat import RAT
@@ -33,6 +34,7 @@ class SessionManager(MachineBase):
                 "system_request_help": "process_help_request(*)",
                 "system_request_processed": "processed_help_request(*)",
                 "system_request_cancel": "remove_help_request(*)",
+                "system_student_rat_completed": "check_team_rat_start(*)",
             },
         )
 
@@ -87,6 +89,25 @@ class SessionManager(MachineBase):
             for facilitator in self.facilitator_sessions.values():
                 facilitator.send_self_event("system_any_help_request", False)
 
+    def check_team_rat_start(self, team: str):
+        if any(
+            not self.student_sessions[member].individual_rat_complete
+            for member in self.teams[team]
+        ):
+            LOGGER.info(f"Member has not completed individual RAT")
+            LOGGER.info(f"Team {team} cannot start team RAT")
+            return
+
+        LOGGER.info(f"Team {team} can start team RAT")
+        handles = [self.student_sessions[member].handle for member in self.teams[team]]
+        merged_handle = MergedMQTTHandle(handles)
+        rat_stm = StudentTeamStm(
+            f"team_{team}", merged_handle, self.rat, self.teams[team]
+        )
+        rat_stm.install(self.driver)
+
+        self.team_rat_sessions[team] = rat_stm
+
     def check_auth(self, *args, **kwargs) -> None:
         if "scope" not in kwargs:
             LOGGER.error("No scope in auth message")
@@ -110,7 +131,13 @@ class SessionManager(MachineBase):
 
     def _make_new_student_session(self, team_id: str, student_id: str) -> None:
         if student_id in self.student_sessions:
+            # TODO: Send error message
             LOGGER.error(f"Student {student_id} already has a session")
+            return
+
+        if team_id in self.team_rat_sessions:
+            # TODO: Send error message
+            LOGGER.error(f"Team {team_id} has already started team RAT. Cannot join")
             return
 
         LOGGER.info(f"Creating session for student {student_id} in team {team_id}")

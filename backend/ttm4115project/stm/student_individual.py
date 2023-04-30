@@ -8,11 +8,12 @@ LOGGER = create_logger(__name__)
 
 
 class StudentIndividualStm(MachineBase):
-    def __init__(self, name: str, handle: MQTTHandle, rat: RAT):
+    def __init__(self, name: str, parent: str, handle: MQTTHandle, rat: RAT):
         super().__init__(name, handle)
         self.rat = rat
         self.current_question = 0
         self.answers = []
+        self.parent = parent
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         states = [State("s_rat_individual", entry="start_rat_question")]
@@ -53,7 +54,7 @@ class StudentIndividualStm(MachineBase):
 
         self.current_question += 1
         if self.current_question >= len(self.rat.questions):
-            self.send_global_event("system_student_rat_completed", name=self.name)
+            self.send_event(self.parent, "system_student_rat_completed", name=self.name)
             return "final"
 
         question: RATQuestion = self.rat.questions[self.current_question]

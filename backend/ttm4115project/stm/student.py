@@ -69,6 +69,17 @@ class StudentStm(MachineBase):
                 trigger="system_student_rat_completed",
                 function=self.check_individual_complete,
             ),
+            Transition(
+                source="s_student_waiting_team",
+                target="s_team_rat",
+                trigger="system_team_rat_start",
+            ),
+            Transition(
+                source="s_team_rat",
+                target="final",
+                trigger="system_team_rat_complete",
+                action="notify_rat_complete()",
+            ),
             # Help transitions
             Transition(
                 source="s_student_rat",
@@ -97,7 +108,9 @@ class StudentStm(MachineBase):
         return states, transitions
 
     def start_individual_rat(self):
-        stm = StudentIndividualStm(f"{self.name}_individual", self.handle, self.rat)
+        stm = StudentIndividualStm(
+            f"{self.name}_individual", self.name, self.handle, self.rat
+        )
         self.handle.on_message = make_mqtt_callback(self.driver, [self.name, stm.name])
         stm.install(self.driver, subscribe=False)
         self.individual_rat = True
@@ -119,6 +132,11 @@ class StudentStm(MachineBase):
         self.handle.on_message = make_mqtt_callback(self.driver, [self.name])
         self.individual_rat = False
         self.individual_rat_complete = True
+
+        self.send_event(
+            "stm_session_manager", "system_student_rat_completed", team=self.team
+        )
+
         return "s_student_waiting_team"
 
     def notify_queue_update(self, position: int):
@@ -149,3 +167,6 @@ class StudentStm(MachineBase):
             return "s_student_rat"
         else:
             return "s_team_rat"
+
+    def notify_rat_complete(self):
+        self.handle.publish(MQTTMessage(event="rat_complete"))
