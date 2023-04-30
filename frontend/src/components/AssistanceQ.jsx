@@ -59,7 +59,7 @@ import {
                 >
                   Queue length: {dummyQ.length}
                 </Heading>
-                  <VStack maxH={450} overflow={"scroll"}>
+                  <VStack maxH={310} overflowY={"scroll"}>
                 {dummyQ.map((group, i) => getCard(i, group))}
   
                   </VStack>
