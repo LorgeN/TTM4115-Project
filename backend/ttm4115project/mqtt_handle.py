@@ -114,10 +114,10 @@ class MQTTWrapperClient:
         # topic collisions
         self.base_topic = os.getenv("MQTT_BASE_TOPIC", "ttm4115project")
 
-        self.client = mqtt.Client(
-            client_id=f"ttm4115project-backend-{uuid.uuid4().hex}",
-            reconnect_on_failure=True,
-        )
+        client_id = f"ttm4115project-backend-{uuid.uuid4().hex}"
+        LOGGER.debug(f"Client ID: {client_id}")
+
+        self.client = mqtt.Client(client_id=client_id, reconnect_on_failure=True)
         if mqtt_username is not None and mqtt_password is not None:
             self.client.username_pw_set(mqtt_username, mqtt_password)
 
@@ -128,7 +128,7 @@ class MQTTWrapperClient:
         self.client.will_set(
             f"{self.base_topic}/status",
             json.dumps(MQTTMessage(event="offline").to_dict()),
-            qos=1,
+            qos=2,
         )
         self.client.connect(mqtt_broker, mqtt_port)
         self.client.loop_start()
@@ -147,6 +147,7 @@ class MQTTWrapperClient:
 
     def __on_connect(self, client: mqtt.Client, userdata, flags, rc) -> None:
         LOGGER.info("Connected to MQTT broker")
+        self.publish_message(f"{self.base_topic}/status", MQTTMessage(event="online"))
 
     def __on_disconnect(self, client: mqtt.Client, userdata, rc) -> None:
         LOGGER.info("Disconnected from MQTT broker")
