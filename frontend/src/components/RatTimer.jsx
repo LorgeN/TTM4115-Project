@@ -1,52 +1,79 @@
-import React from 'react';
-import { useCountdown } from '../components/Hook/useCountdown';
-import { HStack } from '@chakra-ui/react';
+import React from "react";
+import { useCountdown } from "../components/Hook/useCountdown";
+import { HStack } from "@chakra-ui/react";
 import {
-    Text,
-  } from "@chakra-ui/react";
-import { useNavigate } from 'react-router-dom';
+  Text,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Button,
+  useDisclosure,
+} from "@chakra-ui/react";
 
-const ExpiredNotice = () => {
-    
-    const navigate = useNavigate()
-    navigate("/studenthome")
-    // return (
-    //   <div className="expired-notice">
-    //     <span>Expired!!!</span>
-    //     <p>Please select a future date and time.</p>
-    //   </div>
-    // );
-    
-  };
+const ExpiredNotice = (props) => {
 
-  const ShowCounter = ({ days, hours, minutes, seconds }) => {
-    return (
-        <HStack>
-          <DateTimeDisplay value={minutes} isDanger={false} />
-          <Text fontWeight={"bold"}>:</Text>
-          <DateTimeDisplay value={seconds} isDanger={false} />
-        </HStack>
-    );
-  };
+  return (
+    <AlertDialog
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+    >
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader
+            fontSize="lg"
+            fontWeight="bold"
+          >
+            Time is up!
+          </AlertDialogHeader>
+          <AlertDialogBody>Your answers have been saved.</AlertDialogBody>
+          <AlertDialogFooter>
+            <Button onClick={props.setIsTimerExpired}>OK</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  );
+};
 
+const ShowCounter = ({ days, hours, minutes, seconds }) => {
+  return (
+    <HStack>
+      <DateTimeDisplay
+        value={minutes}
+        isDanger={false}
+      />
+      <Text fontWeight={"bold"}>:</Text>
+      <DateTimeDisplay
+        value={seconds}
+        isDanger={false}
+      />
+    </HStack>
+  );
+};
 
 const DateTimeDisplay = ({ value, isDanger }) => {
   return (
-    <div className={isDanger ? 'countdown danger' : 'countdown'}>
-        <Text fontWeight={"bold"}>{value}</Text>
+    <div className={isDanger ? "countdown danger" : "countdown"}>
+      <Text fontWeight={"bold"}>{value}</Text>
     </div>
   );
 };
 
 export const CountdownTimer = ({ targetDate, setIsTimerExpired }) => {
   const [days, hours, minutes, seconds] = useCountdown(targetDate);
-  const navigate = useNavigate()
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   if (minutes + seconds <= 0) {
-    setIsTimerExpired(true)
-    // navigate("/studenthome")
-    // return <ExpiredNotice />;
-    return
+    return (
+      <ExpiredNotice
+        isOpen={true}
+        onClose={onClose}
+        setIsTimerExpired={setIsTimerExpired}
+      />
+    );
   } else {
     return (
       <ShowCounter

@@ -49,7 +49,7 @@ export const RatCard = (props) => {
 
   const getTime = () => { // Replace with getting actual time. submit on expire 
     const time = new Date();
-    return time.setSeconds(time.getSeconds() + 1200);
+    return time.setSeconds(time.getSeconds() + 10);
   }
 
   return (
