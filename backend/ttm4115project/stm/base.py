@@ -50,7 +50,7 @@ class Transition:
         _set_if_not_none(result, "target", self.target)
         _set_if_not_none(result, "targets", self.targets)
         _set_if_not_none(result, "trigger", self.trigger)
-        _set_if_not_none(result, "action", self.action)
+        _set_if_not_none(result, "effect", self.action)
         _set_if_not_none(result, "function", self.function)
         return result
 
