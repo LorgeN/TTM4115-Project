@@ -3,6 +3,9 @@ from ttm4115project.stm.student_individual import StudentIndividualStm
 from ttm4115project.rat import RAT, RATQuestion
 from ttm4115project.mqtt_handle import MQTTHandle, MQTTMessage
 from typing import List, Tuple
+from ttm4115project.utils.logging import create_logger
+
+LOGGER = create_logger(__name__)
 
 
 class StudentStm(MachineBase):
@@ -18,6 +21,7 @@ class StudentStm(MachineBase):
         self.rat = rat
         # Use this to keep track of return state for requesting help
         self.individual_rat = False
+        self.individual_rat_complete = False
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         states = [
@@ -26,9 +30,8 @@ class StudentStm(MachineBase):
             ),
             State(
                 name="s_student_rat",
-                entry="start_individual_rat()",
                 events={
-                    "message_request_help": "request_help()",
+                    "system_queue_update": "defer",
                 },
             ),
             State(
@@ -37,7 +40,7 @@ class StudentStm(MachineBase):
             State(
                 name="s_team_rat",
                 events={
-                    "message_request_help": "request_help()",
+                    "system_queue_update": "defer",
                 },
             ),
             State(
@@ -58,6 +61,7 @@ class StudentStm(MachineBase):
                 source="s_student_idle",
                 target="s_student_rat",
                 trigger="message_start_rat",
+                action="start_individual_rat()",
             ),
             Transition(
                 source="s_student_rat",
@@ -68,6 +72,11 @@ class StudentStm(MachineBase):
             # Help transitions
             Transition(
                 source="s_student_rat",
+                target="s_student_require_help",
+                trigger="message_request_help",
+            ),
+            Transition(
+                source="s_team_rat",
                 target="s_student_require_help",
                 trigger="message_request_help",
             ),
@@ -94,7 +103,13 @@ class StudentStm(MachineBase):
         self.individual_rat = True
 
     def request_help(self):
-        self.send_global_event("system_request_help", student=self.name, team=self.team)
+        LOGGER.info(f"Requesting help for {self.name}")
+        self.send_event(
+            "stm_session_manager",
+            "system_request_help",
+            student=self.name,
+            team=self.team,
+        )
 
     def check_individual_complete(self, *args, **kwargs):
         if kwargs.get("name", None) != f"{self.name}_individual":
@@ -103,9 +118,11 @@ class StudentStm(MachineBase):
         # Redirect events back to this stm
         self.handle.on_message = make_mqtt_callback(self.driver, [self.name])
         self.individual_rat = False
+        self.individual_rat_complete = True
         return "s_student_waiting_team"
 
     def notify_queue_update(self, position: int):
+        LOGGER.info(f"Queue update: {position}")
         self.handle.publish(
             MQTTMessage(
                 event="queue_update",
@@ -116,7 +133,12 @@ class StudentStm(MachineBase):
         )
 
     def cancel_help_request(self) -> str:
-        self.send_global_event("system_cancel_help", student=self.name, team=self.team)
+        self.send_event(
+            "stm_session_manager",
+            "system_request_cancel",
+            student=self.name,
+            team=self.team,
+        )
         return self.return_to_rat_state()
 
     def request_completed(self) -> str:

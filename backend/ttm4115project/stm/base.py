@@ -128,9 +128,16 @@ class MachineBase:
 
         return self.__driver
 
+    def send_event(self, target_stm: str, id: str, *args, **kwargs):
+        LOGGER.debug(f"{self.name}: Sending {id} to {target_stm}")
+        self.__driver.send(id, target_stm, args=args, kwargs=kwargs)
+
     def send_global_event(self, id: str, *args, **kwargs):
         LOGGER.debug(f"{self.name}: Sending {id} to all machines")
         for stm in Driver._stms_by_id.keys():
+            if stm == self.name:
+                continue
+
             self.__driver.send(id, stm, args=args, kwargs=kwargs)
 
     def send_self_event(self, id: str, *args, **kwargs):
@@ -138,4 +145,5 @@ class MachineBase:
         self.machine.send(id, args=args, kwargs=kwargs)
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
+        # Override this method to define the state machine
         raise NotImplementedError()

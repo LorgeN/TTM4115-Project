@@ -5,7 +5,7 @@ from ttm4115project.mqtt_handle import MQTTWrapperClient, MQTTMessage
 from ttm4115project.stm.facilitator import Facilitator
 from ttm4115project.utils.logging import create_logger
 from ttm4115project.rat import RAT
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 LOGGER = create_logger(__name__)
 
@@ -24,12 +24,12 @@ class SessionManager(MachineBase):
 
         self.client = client
 
-        self.student_sessions = {}
-        self.facilitator_sessions = {}
-        self.teams = {}
+        self.student_sessions: Dict[str, StudentStm] = {}
+        self.facilitator_sessions: Dict[str, Facilitator] = {}
+        self.teams: Dict[str, List[str]] = {}
 
-        self.team_sessions = {}
-        self.help_requests = {}
+        self.team_rat_sessions = {}
+        self.help_requests: List[HelpRequest] = []
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         s_initial = State(
@@ -37,6 +37,8 @@ class SessionManager(MachineBase):
             events={
                 "message_auth": "check_auth(*)",
                 "system_request_help": "process_help_request(*)",
+                "system_request_processed": "processed_help_request(*)",
+                "system_request_cancel": "remove_help_request(*)",
             },
         )
 
@@ -48,7 +50,39 @@ class SessionManager(MachineBase):
         return states, transitions
 
     def process_help_request(self, student: str, team: str):
-        pass
+        self.help_requests.append(HelpRequest(student, team))
+
+        # Send queue update
+        stm = self.student_sessions[student]
+        stm.send_self_event("system_queue_update", position=len(self.help_requests))
+
+    def processed_help_request(self, student: str, team: str):
+        stm = self.student_sessions[student]
+        stm.send_self_event("system_request_completed")
+
+        self.remove_help_request(student, team)
+
+    def remove_help_request(self, student: str, team: str):
+        # Will raise error if not present
+        removed = False
+        target = None
+        for i, request in enumerate(self.help_requests):
+            if request.student == student and request.team == team:
+                target = i
+                removed = True
+                continue
+
+            # Send queue update for students after the removed one
+            if removed:
+                stm = self.student_sessions[request.student]
+                # Use i since the position will be reduced by one
+                stm.send_self_event("system_queue_update", position=i)
+
+        if not removed:
+            LOGGER.error("Could not find help request to remove")
+            return
+
+        del self.help_requests[target]
 
     def check_auth(self, *args, **kwargs) -> None:
         if "scope" not in kwargs:
@@ -72,7 +106,11 @@ class SessionManager(MachineBase):
             return
 
     def _make_new_student_session(self, team_id: str, student_id: str) -> None:
-        print("Making new student session")
+        if student_id in self.student_sessions:
+            LOGGER.error(f"Student {student_id} already has a session")
+            return
+
+        LOGGER.info(f"Creating session for student {student_id} in team {team_id}")
         topic = f"student/{team_id}/{student_id}"
         handle = self.client.create_handle(topic)
         stm = StudentStm(student_id, team_id, handle, self.rat)
@@ -85,7 +123,7 @@ class SessionManager(MachineBase):
         else:
             self.teams[team_id].append(student_id)
 
-        print(f"Created session for student {student_id} in team {team_id}")
+        LOGGER.info(f"Created session for student {student_id} in team {team_id}")
         self.handle.publish(
             MQTTMessage(
                 event="session_created",
