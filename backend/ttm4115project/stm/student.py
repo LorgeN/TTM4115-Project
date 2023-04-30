@@ -61,13 +61,15 @@ class StudentStm(MachineBase):
         return states, transitions
 
     def start_individual_rat(self):
-        stm = StudentIndividualStm(f"{self.name}_individual", self.handle, self.rat)
+        stm = StudentIndividualStm(
+            f"{self.name}_individual", self.handle, self.rat)
         print("Updating callback")
-        self.handle.on_message = make_mqtt_callback(self.driver, [self.name, stm.name])
+        self.handle.on_message = make_mqtt_callback(
+            self.driver, [self.name, stm.name])
         stm.install(self.driver, subscribe=False)
 
     def check_individual_complete(self, *args, **kwargs):
         if kwargs.get("name", None) != f"{self.name}_individual":
             return "s_rat_individual"
-        
+
         return "s_student_waiting_team"

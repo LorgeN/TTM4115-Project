@@ -1,6 +1,7 @@
 from stmpy import Machine, Driver
 from ttm4115project.stm.base import State, Transition, MachineBase, make_mqtt_callback
 from ttm4115project.stm.student import StudentStm
+from ttm4115project.stm.facilitator import Facilitator
 from ttm4115project.mqtt_handle import MQTTHandle, MQTTWrapperClient
 from ttm4115project.utils.logging import create_logger
 from ttm4115project.rat import RAT
@@ -76,5 +77,11 @@ class SessionManager(MachineBase):
         print(f"Created session for student {student_id} in team {team_id}")
 
     def _make_new_facilitator_session(self, facilitator_id: str) -> None:
-        # TODO
-        pass
+        print("Making new facilitator session")
+        handle = self.client.create_handle(f"facilitator/{facilitator_id}")
+        stm = Facilitator(facilitator_id, handle)
+        stm.install(self.driver)
+
+        self.facilitator_sessions[facilitator_id] = stm
+
+        print(f"Created session for facilitator {facilitator_id}")
