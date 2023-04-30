@@ -3,6 +3,7 @@ from ttm4115project.utils.logging import create_logger
 import os
 import paho.mqtt.client as mqtt
 import json
+import uuid
 
 LOGGER = create_logger(__name__)
 
@@ -72,8 +73,24 @@ class MQTTHandle:
 
 
 class MergedMQTTHandle:
-    def __init__(self, handles: List[MQTTHandle]) -> None:
+    def __init__(
+        self,
+        handles: List[MQTTHandle],
+        on_message: Callable[[MQTTMessage], Optional[MQTTMessage]] = None,
+    ) -> None:
         self.handles = handles
+        self.on_message = on_message
+
+        # Somewhat cursed but it will be alright
+        for handle in handles:
+            orig_on_message = handle.on_message
+
+            def on_message_override(message: MQTTMessage) -> Optional[MQTTMessage]:
+                if self.on_message is not None:
+                    self.on_message(message)
+                return orig_on_message(message)
+
+            handle.on_message = on_message_override
 
     def subscribe(self) -> None:
         pass
@@ -98,7 +115,8 @@ class MQTTWrapperClient:
         self.base_topic = os.getenv("MQTT_BASE_TOPIC", "ttm4115project")
 
         self.client = mqtt.Client(
-            client_id="ttm4115project-backend", reconnect_on_failure=True
+            client_id=f"ttm4115project-backend-{uuid.uuid4().hex}",
+            reconnect_on_failure=True,
         )
         if mqtt_username is not None and mqtt_password is not None:
             self.client.username_pw_set(mqtt_username, mqtt_password)
