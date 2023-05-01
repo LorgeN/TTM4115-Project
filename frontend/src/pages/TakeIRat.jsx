@@ -1,85 +1,54 @@
 import { Container, Button } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import mqtt from "precompiled-mqtt";
 
 export const TakeRat = () => {
   const navigate = useNavigate()
-  const sporsmaal = { // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
-    spm1: {
-      beskrivelse: "Dette er et test-spørsmål",
-      alternativer: [
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: true,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-      ],
-    },
-    spm2: {
-      beskrivelse: "Dette er et test-spørsmål",
-      alternativer: [
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: true,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-        {
-          alt: "Dette er et test-alternativ",
-          korrekt: false,
-        },
-      ],
-    },
-  }; // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
+  /*const sporsmaal = {
+    "questions": [
+      {
+        "question": "This is a question",
+        "answers": [
+          "This is answer 1",
+          "This is answer 2",
+          "This is answer 3",
+          "This is answer 4 (CORRECT)"
+        ],
+        "correct_answer": 3
+      },
+      {
+        "question": "This is a question",
+        "answers": [
+          "This is answer 1",
+          "This is answer 2",
+          "This is answer 3",
+          "This is answer 4 (CORRECT)"
+        ],
+        "correct_answer": 3
+      }
+    ]
+  }; */// dette er hardkodet JSON, kunne like gjerne vært fra mqtt
 
   const [client, setClient] = useState(null);
   /*const [isSubed, setIsSub] = useState(false);*/
   const [payload, setPayload] = useState({});
   const [connectStatus, setConnectStatus] = useState("Connect");
   const [data, setData] = useState({}); //data fra RAT
-
+  const [sporsmaal, setSporsmaal] = useState({});
   const connect = () => {
-    //const url = `ws://broker.emqx.io:8083/mqtt`;
-    const options = {
-      keepalive: 30,
-      protocolId: "MQTT",
-      protocolVersion: 4,
-      clean: true,
-      reconnectPeriod: 1000,
-      connectTimeout: 30 * 1000,
-      rejectUnauthorized: false,
-    };
-
-    //options.username = localStorage.getItem("User");
-    options.username = "komsys";
-    options.password = "komsys123";
-    console.log(options);
-
-    setClient(mqtt.connect("ws://broker.emqx.io:8083/mqtt")); //#DENNE FUNKER I DET MINSTE
+    if (!client){
+      const options = {
+        clientId: 'clientId-' + Math.random().toString(16).substr(2, 8),
+        username: "komsys",
+        password: "komsys123"
+      }
+      console.log("trying to connect")
+      setClient(mqtt.connect("wss://mqtt-broker.tanberg.org:9001/mqtt", options));
+    } //#DENNE FUNKER I DET MINSTE
     //setClient(mqtt.connect("ws://mqtt-broker.tandberg.org:9001"), options) //# DENNE FUNKER IKKE (muligens noe funky med connection)
   };
-
-
-
 
     const publish = () => {
       if (!client) {
@@ -115,12 +84,21 @@ export const TakeRat = () => {
       console.log("connected")
       client.on("connect", () => {
         console.log("connected")
+        
         //publish();
         setConnectStatus("Connected");
+        client.subscribe("ttm4115project/student/08/test1/outbound")
         
         
       });
+
+
       client.on("message", (topic, message) => {
+        console.log(message)
+        console.log(JSON.parse(message).data)
+        if (JSON.parse(message).event === "questions") {
+          setSporsmaal(JSON.parse(message.data))
+        }
         setPayload({ topic, message: message.toString() });
       });
     };
@@ -133,7 +111,7 @@ export const TakeRat = () => {
   /*const { host, clientId, port, username, password } = values;*/
 
     
-  },[]);
+  },[client]);
   return (
     <Container marginTop={10}>
 
