@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import * as React from 'react'
 
+// 1. import `ChakraProvider` component
+import { ChakraProvider } from '@chakra-ui/react'
+import { TakeRat } from './pages/TakeIRat';
+import { TakeTRat } from './pages/TakeTRat';
+import { StudentHome } from './pages/StudentHome';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { WaitingRoom } from './pages/WaitingRoom';
+import { Login } from './pages/Login';
+/*import { Connection } from './pages/MQTTExperiment';*/
+import { TaHome } from './pages/TaHome';
 function App() {
+  // 2. Wrap ChakraProvider at the root of your app
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <ChakraProvider>
+  <BrowserRouter >
+      <Routes >
+        <Route path="/" element={<Login />}/>
+        <Route path="/studenthome" element={<StudentHome />}/>
+        <Route path="/taHome" element={<TaHome />}/>
+        <Route path="takerat" element={<TakeRat />} />
+        <Route path="takeTrat" element={<TakeTRat />} />
+        <Route path="waitingroom" element={<WaitingRoom />} />
+      </Routes>
+
+    </BrowserRouter>
+    </ChakraProvider>
+  )
 }
 
 export default App;

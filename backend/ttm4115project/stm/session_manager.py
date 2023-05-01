@@ -52,10 +52,10 @@ class SessionManager(MachineBase):
         stm = self.student_sessions[student]
         stm.send_self_event("system_queue_update", position=len(self.help_requests))
 
-        # Signal to facilitators that there are help requests
-        if len(self.help_requests) == 1:
-            for facilitator in self.facilitator_sessions.values():
-                facilitator.send_self_event("system_any_help_request", True)
+        # Send length of help requests to facilitators
+        help_requests_len = len(self.help_requests)
+        for facilitator in self.facilitator_sessions.values():
+            facilitator.send_self_event("system_len_help_requests", help_requests_len)
 
     def processed_help_request(self, student: str, team: str):
         stm = self.student_sessions[student]
@@ -85,9 +85,10 @@ class SessionManager(MachineBase):
 
         del self.help_requests[target]
 
-        if len(self.help_requests) == 0:
-            for facilitator in self.facilitator_sessions.values():
-                facilitator.send_self_event("system_any_help_request", False)
+        # Send length of help requests to facilitators
+        help_requests_len = len(self.help_requests)
+        for facilitator in self.facilitator_sessions.values():
+            facilitator.send_self_event("system_len_help_requests", help_requests_len)
 
     def check_team_rat_start(self, team: str):
         if any(
@@ -168,10 +169,21 @@ class SessionManager(MachineBase):
 
     def _make_new_facilitator_session(self, facilitator_id: str) -> None:
         print("Making new facilitator session")
-        handle = self.client.create_handle(f"facilitator/{facilitator_id}")
+        topic = f"facilitator/{facilitator_id}"
+        handle = self.client.create_handle(topic)
         stm = Facilitator(facilitator_id, handle, self.help_requests)
         stm.install(self.driver)
 
         self.facilitator_sessions[facilitator_id] = stm
 
         print(f"Created session for facilitator {facilitator_id}")
+        self.handle.publish(
+            MQTTMessage(
+                event="facilitator_session_created",
+                data={
+                    "facilitator_id": facilitator_id,
+                    "topic_inbound": f"{topic}/inbound",
+                    "topic_outbound": f"{topic}/outbound",
+                },
+            )
+        )

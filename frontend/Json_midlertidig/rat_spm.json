@@ -1,0 +1,84 @@
+{
+    "questions": [
+      {
+        "question": "This is a question",
+        "answers": [
+          "This is answer 1",
+          "This is answer 2",
+          "This is answer 3",
+          "This is answer 4 (CORRECT)"
+        ],
+        "correct_answer": 3
+      },
+      {
+        "question": "This is a question",
+        "answers": [
+          "This is answer 1",
+          "This is answer 2",
+          "This is answer 3",
+          "This is answer 4 (CORRECT)"
+        ],
+        "correct_answer": 3
+      }
+    ]
+  }
+
+
+{
+    "spm1": {
+        "beskrivelse": "Dette er et test-spørsmål",
+        "alternativer": [
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": true
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            }
+        ]
+
+    },
+    "spm2": {
+        "beskrivelse": "Dette er et test-spørsmål",
+        "alternativer": [
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": true
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            },
+            {
+                "alt": "Dette er et test-alternativ",
+                "korrekt": false
+            }
+        ]
+
+    },
+
+},
+
+
+
+
+
+
+
+{
+    "alt": "Dette er et test-alternativ",
+    "alt": "Dette er et test-alternative"
+}

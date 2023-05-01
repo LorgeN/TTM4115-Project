@@ -17,16 +17,16 @@ class Facilitator(MachineBase):
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
         s_initial = State(
             name="s_initial",
-            entry="start",
+            entry="send_status",
             events={
-                "system_any_help_request": "any_request(*)",
+                "system_len_help_requests": "notify_num_requests(*)",
                 "message_request_status": "send_status()",
             },
         )
         s_helping = State(
             name="s_helping",
             events={
-                "system_any_help_request": "any_request(*)",
+                "system_len_help_requests": "notify_num_requests(*)",
                 "message_request_status": "send_status()",
             },
         )
@@ -75,14 +75,10 @@ class Facilitator(MachineBase):
 
         return states, transitions
 
-    def start(self) -> None:
-        self.send_status()
-        self.machine.start_timer("t_timeout", 600000)
-
     def send_status(self) -> None:
         self.handle.publish(
             MQTTMessage(
-                event="message_status",
+                event="status",
                 data={
                     "busy": self.busy,
                 },
@@ -102,7 +98,7 @@ class Facilitator(MachineBase):
 
             self.handle.publish(
                 MQTTMessage(
-                    event="message_request_accepted",
+                    event="request_accepted",
                     data={"student": request.student, "team": request.team},
                 )
             )
@@ -110,8 +106,8 @@ class Facilitator(MachineBase):
     def request_completed(self) -> None:
         self.busy = False
 
-    def any_request(self, is_any: bool) -> None:
-        self.handle.publish(MQTTMessage(event="message_any_request", data=is_any))
+    def notify_num_requests(self, new_len: int) -> None:
+        self.handle.publish(MQTTMessage(event="num_requests", data=new_len))
 
     def create_new_rat(self) -> None:
         print("create_new_rat")
