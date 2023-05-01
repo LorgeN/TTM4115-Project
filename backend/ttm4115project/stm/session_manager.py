@@ -1,5 +1,5 @@
 from stmpy import Machine, Driver
-from ttm4115project.stm.base import State, Transition, MachineBase
+from ttm4115project.stm.base import State, Transition, MachineBase, HelpRequest
 from ttm4115project.stm.student import StudentStm
 from ttm4115project.stm.student_team import StudentTeamStm
 from ttm4115project.mqtt_handle import MQTTWrapperClient, MQTTMessage, MergedMQTTHandle
@@ -9,12 +9,6 @@ from ttm4115project.rat import RAT
 from typing import Tuple, List, Dict
 
 LOGGER = create_logger(__name__)
-
-
-class HelpRequest:
-    def __init__(self, student: str, team: str) -> None:
-        self.student = student
-        self.team = team
 
 
 class SessionManager(MachineBase):
@@ -58,6 +52,11 @@ class SessionManager(MachineBase):
         stm = self.student_sessions[student]
         stm.send_self_event("system_queue_update", position=len(self.help_requests))
 
+        # Signal to facilitators that there are help requests
+        if len(self.help_requests) == 1:
+            for facilitator in self.facilitator_sessions.values():
+                facilitator.send_self_event("system_any_help_request", True)
+
     def processed_help_request(self, student: str, team: str):
         stm = self.student_sessions[student]
         stm.send_self_event("system_request_completed")
@@ -86,6 +85,10 @@ class SessionManager(MachineBase):
 
         del self.help_requests[target]
 
+        if len(self.help_requests) == 0:
+            for facilitator in self.facilitator_sessions.values():
+                facilitator.send_self_event("system_any_help_request", False)
+
     def check_team_rat_start(self, team: str):
         if any(
             not self.student_sessions[member].individual_rat_complete
@@ -98,7 +101,9 @@ class SessionManager(MachineBase):
         LOGGER.info(f"Team {team} can start team RAT")
         handles = [self.student_sessions[member].handle for member in self.teams[team]]
         merged_handle = MergedMQTTHandle(handles)
-        rat_stm = StudentTeamStm(f"team_{team}", merged_handle, self.rat, self.teams[team])
+        rat_stm = StudentTeamStm(
+            f"team_{team}", merged_handle, self.rat, self.teams[team]
+        )
         rat_stm.install(self.driver)
 
         self.team_rat_sessions[team] = rat_stm
@@ -164,7 +169,7 @@ class SessionManager(MachineBase):
     def _make_new_facilitator_session(self, facilitator_id: str) -> None:
         print("Making new facilitator session")
         handle = self.client.create_handle(f"facilitator/{facilitator_id}")
-        stm = Facilitator(facilitator_id, handle)
+        stm = Facilitator(facilitator_id, handle, self.help_requests)
         stm.install(self.driver)
 
         self.facilitator_sessions[facilitator_id] = stm

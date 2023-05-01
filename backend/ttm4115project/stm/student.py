@@ -106,7 +106,7 @@ class StudentStm(MachineBase):
             ),
             Transition(
                 source="s_student_require_help",
-                trigger="system_request_complete",
+                trigger="system_request_completed",
                 targets="s_student_rat s_team_rat",
                 function=self.request_completed,
             ),

@@ -26,6 +26,12 @@ def _set_if_not_none(dict, key, value):
         dict[key] = value
 
 
+class HelpRequest:
+    def __init__(self, student: str, team: str) -> None:
+        self.student = student
+        self.team = team
+
+
 class Transition:
     def __init__(
         self,
