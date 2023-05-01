@@ -10,58 +10,37 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import mqtt from "precompiled-mqtt";
+import { createClient } from "../utils/client";
 
 export const StudentHome = () => {
   const navigate = useNavigate();
   const [isHelpRequested, setHelpRequested] = useState(false);
   const [qNum, setqNum] = useState(0);
-  const [client, setClient] = useState(null);
+  const [client] = useState(createClient());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (!client) {
-      const options = {
-        clientId: "clientId-" + Math.random().toString(16).substr(2, 8),
-        username: "komsys",
-        password: "komsys123",
-      };
-      console.log("trying to connect");
-      setClient(
-        mqtt.connect("wss://mqtt-broker.tanberg.org:9001/mqtt", options)
-      );
-    } else {
-      client.on("error", (err) => {
-        console.error("Connection error: ", err);
-        client.end();
-      });
+    client.on("message", (topic, message) => {
+      const res = JSON.parse(message);
+      console.log(res);
 
-      client.on("reconnect", () => {
-        console.log("Reconnecting...");
-      });
+      if (res.event === "queue_update") {
+        setqNum(res.data.position);
+      } else if (res.event === "session_created") {
+        localStorage.setItem(
+          "inbound",
+          "ttm4115project/" + res.data.topic_inbound
+        );
+        const outbound = "ttm4115project/" + res.data.topic_outbound;
+        localStorage.setItem("outbound", outbound);
+        client.subscribe(outbound, "0");
+      }
+    });
 
-      client.on("message", (topic, message) => {
-        const res = JSON.parse(message);
-        console.log(res);
-
-        if (res.event === "queue_update") {
-          setqNum(res.data.position);
-        } else if (res.event === "session_created") {
-          localStorage.setItem(
-            "inbound",
-            "ttm4115project/" + res.data.topic_inbound
-          );
-          const outbound = "ttm4115project/" + res.data.topic_outbound;
-          localStorage.setItem("outbound", outbound);
-          client.subscribe(outbound, "0");
-        }
-      });
-
-      client.on("connect", () => {
-        console.log("connect");
-        client.subscribe("ttm4115project/sessions/outbound", 0);
-      });
-    }
+    client.on("connect", () => {
+      console.log("connect");
+      client.subscribe("ttm4115project/sessions/outbound", 0);
+    });
 
     return () => {
       if (client) {
@@ -71,7 +50,7 @@ export const StudentHome = () => {
   }, [client]); /*  connection useEffect */
 
   useEffect(() => {
-    if (client && !isAuthenticated) {
+    if (!isAuthenticated) {
       console.log("authenticating");
       const authData = {
         event: "auth",

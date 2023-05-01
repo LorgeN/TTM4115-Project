@@ -3,9 +3,9 @@ import { RatCard } from "../components/IRatCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import mqtt from "precompiled-mqtt";
+import { createClient } from "../utils/client";
 
 export const TakeRat = () => {
-  const navigate = useNavigate();
   /*const sporsmaal = {
     "questions": [
       {
@@ -31,19 +31,17 @@ export const TakeRat = () => {
     ]
   }; */ // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
 
-  const [client, setClient] = useState(null);
-  const [data, setData] = useState({}); //data fra RAT
+  const navigate = useNavigate();
+  const [client] = useState(createClient());
+  const [data, setData] = useState(); //data fra RAT
   const [sporsmaal, setSporsmaal] = useState();
 
   useEffect(() => {
-    console.log(data);
-
-    if (!client) {
-      console.log("no client");
+    if (!data) {
       return;
     }
 
-    console.log("publishing");
+    console.log(data);
 
     client.publish(
       localStorage.getItem("inbound"),
@@ -60,37 +58,25 @@ export const TakeRat = () => {
   }, [data]);
 
   useEffect(() => {
-    if (client) {
-      client.on("message", (topic, message) => {
-        const res = JSON.parse(message);
-        console.log(res);
+    client.on("message", (topic, message) => {
+      const res = JSON.parse(message);
+      console.log(res);
 
-        if (res.event === "questions") {
-          setSporsmaal(res.data);
-        }
-      });
+      if (res.event === "questions") {
+        setSporsmaal(res.data);
+      }
+    });
 
-      client.on("connect", () => {
-        console.log("connected");
-        client.subscribe(localStorage.getItem("outbound"), "0");
-        client.publish(
-          localStorage.getItem("inbound"),
-          JSON.stringify({ event: "start_rat" }),
-          1,
-          () => {}
-        );
-      });
-    } else {
-      const options = {
-        clientId: "clientId-" + Math.random().toString(16).substr(2, 8),
-        username: "komsys",
-        password: "komsys123",
-      };
-      console.log("trying to connect");
-      setClient(
-        mqtt.connect("wss://mqtt-broker.tanberg.org:9001/mqtt", options)
+    client.on("connect", () => {
+      console.log("connected");
+      client.subscribe(localStorage.getItem("outbound"), "0");
+      client.publish(
+        localStorage.getItem("inbound"),
+        JSON.stringify({ event: "start_rat" }),
+        1,
+        () => {}
       );
-    }
+    });
 
     return () => {
       if (client) {
@@ -98,6 +84,7 @@ export const TakeRat = () => {
       }
     };
   }, [client]);
+
   return (
     <Container marginTop={10}>
       <RatCard
