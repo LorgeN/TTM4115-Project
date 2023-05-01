@@ -16,11 +16,17 @@ export const Login = () => {
   const navigate = useNavigate();
   const teams = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-  const handle_login = (team) => {
+  const handle_student_login = (team) => {
     const name = prompt("Enter your name");
     localStorage.setItem("TeamNumber", team);
     localStorage.setItem("User", name);
     navigate("/studenthome");
+  };
+
+  const handle_facilitator_login = () => {
+    const name = prompt("Enter your name");
+    localStorage.setItem("User", name);
+    navigate("/tahome");
   };
 
   return (
@@ -59,7 +65,7 @@ export const Login = () => {
                   <Button
                     variant={"outline"}
                     colorScheme="orange"
-                    onClick={() => handle_login(team)}
+                    onClick={() => handle_student_login(team)}
                   >
                     {team}
                   </Button>
@@ -75,7 +81,7 @@ export const Login = () => {
                 colorScheme={"orange"}
                 maxW="960px"
                 mx="auto"
-                onClick={() => navigate("/taHome")}
+                onClick={() => handle_facilitator_login()}
               >
                 Join as student assistant
               </Button>
