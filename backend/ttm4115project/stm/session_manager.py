@@ -169,10 +169,21 @@ class SessionManager(MachineBase):
 
     def _make_new_facilitator_session(self, facilitator_id: str) -> None:
         print("Making new facilitator session")
-        handle = self.client.create_handle(f"facilitator/{facilitator_id}")
+        topic = f"facilitator/{facilitator_id}"
+        handle = self.client.create_handle(topic)
         stm = Facilitator(facilitator_id, handle, self.help_requests)
         stm.install(self.driver)
 
         self.facilitator_sessions[facilitator_id] = stm
 
         print(f"Created session for facilitator {facilitator_id}")
+        self.handle.publish(
+            MQTTMessage(
+                event="facilitator_session_created",
+                data={
+                    "facilitator_id": facilitator_id,
+                    "topic_inbound": f"{topic}/inbound",
+                    "topic_outbound": f"{topic}/outbound",
+                },
+            )
+        )

@@ -6,48 +6,87 @@ import {
   CardFooter,
   useDisclosure,
   Button,
-  Center
+  Center,
 } from "@chakra-ui/react";
 import { AssistanceQ } from "../components/AssistanceQ";
 import { AddRatModal } from "../components/AddRatModal";
+import { useState, useEffect } from "react";
+import { createClient } from "../utils/client";
 
 export const TaHome = () => {
-
   const {
     isOpen: isAddOpen,
     onOpen: onAddOpen,
     onClose: onAddClose,
   } = useDisclosure();
- 
-  return (
-    <Container
-      maxW={"4xl"}
-      marginTop={"50"}
-    >
-      <Card>
-        <CardHeader>
+  const [client] = useState(createClient());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-        </CardHeader>
+  useEffect(() => {
+    client.on("message", (topic, message) => {
+      const res = JSON.parse(message);
+      console.log(res);
+
+      if (res.event === "facilitator_session_created") {
+        localStorage.setItem(
+          "inbound",
+          "ttm4115project/" + res.data.topic_inbound
+        );
+        const outbound = "ttm4115project/" + res.data.topic_outbound;
+        localStorage.setItem("outbound", outbound);
+        client.subscribe(outbound, "0");
+      }
+    });
+
+    client.on("connect", () => {
+      console.log("connect");
+      client.subscribe("ttm4115project/sessions/outbound", 0);
+    });
+  }, [client]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log("authenticating");
+      const authData = {
+        event: "auth",
+        data: {
+          scope: "facilitator",
+          id: localStorage.getItem("User"),
+        },
+      };
+      console.log(authData);
+      client.publish(
+        "ttm4115project/sessions/inbound",
+        JSON.stringify(authData),
+        0
+      );
+      setIsAuthenticated(true);
+    }
+  }, [client, isAuthenticated]);
+
+  return (
+    <Container maxW={"4xl"} marginTop={"50"}>
+      <Card>
+        <CardHeader></CardHeader>
         <CardBody paddingBottom={20}>
           <AssistanceQ></AssistanceQ>
         </CardBody>
         <Center paddingBottom={10}>
-           <Button
-                rounded={"full"}
-                px={6}
-                colorScheme={"orange"}
-                bg={"orange.400"}
-                _hover={{ bg: "orange.500" }}
-                onClick={() => onAddOpen()}
-              >
-                Create new RAT
-              </Button>
-          <AddRatModal 
-          isOpen={isAddOpen}
-          onOpen={onAddOpen}
-          onClose={onAddClose}>
-
-          </AddRatModal>
+          <Button
+            rounded={"full"}
+            px={6}
+            colorScheme={"orange"}
+            bg={"orange.400"}
+            _hover={{ bg: "orange.500" }}
+            onClick={() => onAddOpen()}
+          >
+            Create new RAT
+          </Button>
+          <AddRatModal
+            isOpen={isAddOpen}
+            onOpen={onAddOpen}
+            onClose={onAddClose}
+          ></AddRatModal>
         </Center>
       </Card>
     </Container>
