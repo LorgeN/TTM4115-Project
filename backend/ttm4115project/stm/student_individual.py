@@ -12,7 +12,7 @@ class StudentIndividualStm(MachineBase):
         super().__init__(name, handle)
         self.rat = rat
         self.current_question = 0
-        self.answers = []
+        self.answers = None
         self.parent = parent
 
     def get_definiton(self) -> Tuple[List[State], List[Transition]]:
@@ -25,48 +25,38 @@ class StudentIndividualStm(MachineBase):
             ),
             Transition(
                 source="s_rat_individual",
-                targets="s_rat_individual final",
+                target="final",
                 trigger="message_question_answer",
-                function=self.process_answer,
+                action="process_answer(*)",
             ),
         ]
         return states, transitions
 
     def start_rat_question(self):
-        self.current_question = 0
         self.answers = []
 
-        question = self.rat.questions[self.current_question]
-
         self.handle.publish(
             MQTTMessage(
-                event="new_question",
-                data={
-                    "question": question.question,
-                    "answers": question.answers,
-                },
+                event="questions",
+                data=[
+                    {
+                        "question": question.question,
+                        "answers": question.answers,
+                    }
+                    for question in self.rat.questions
+                ],
             )
         )
 
-    def process_answer(self, answer: int):
-        LOGGER.debug("Received answer: %s", answer)
-        self.answers.append(answer)
+    def process_answers(self, answers: List[int]):
+        LOGGER.debug(f"Received answers {answers}")
+        if len(answers) != len(self.rat.questions) or any(
+            answer < 0 or answer >= len(self.rat.questions[i].answers)
+            for i, answer in enumerate(answers)
+        ):
+            self.handle.publish(MQTTMessage(event="invalid_answers"))
+            return
 
-        self.current_question += 1
-        if self.current_question >= len(self.rat.questions):
-            self.send_event(self.parent, "system_student_rat_completed", name=self.name)
-            return "final"
-
-        question: RATQuestion = self.rat.questions[self.current_question]
-
-        self.handle.publish(
-            MQTTMessage(
-                event="new_question",
-                data={
-                    "question": question.question,
-                    "answers": question.answers,
-                },
-            )
-        )
-
-        return "s_rat_individual"
+        # TODO: Do something with this? Save it?
+        self.answers = answers
+        self.send_event(self.parent, "system_student_rat_completed", name=self.name)
