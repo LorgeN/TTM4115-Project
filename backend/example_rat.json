@@ -1,0 +1,14 @@
+{
+  "questions": [
+    {
+      "question": "This is a question",
+      "answers": [
+        "This is answer 1",
+        "This is answer 2",
+        "This is answer 3",
+        "This is answer 4 (CORRECT)"
+      ],
+      "correct_answer": 3
+    }
+  ]
+}
