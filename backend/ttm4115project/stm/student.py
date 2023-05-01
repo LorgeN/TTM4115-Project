@@ -9,7 +9,7 @@ from enum import Enum
 LOGGER = create_logger(__name__)
 
 
-class CompletionStage:
+class CompletionStage(Enum):
     NONE = 0, "s_student_idle"
     INDIVIDUAL_RAT = 1, "s_student_rat"
     TEAM_RAT = 2, "s_team_rat"

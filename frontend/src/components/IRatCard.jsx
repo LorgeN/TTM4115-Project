@@ -23,23 +23,23 @@ export const RatCard = (props) => {
   const [isTimerExpired, setIsTimerExpired] = useState(false);
   const [selected, setSelected] = useState(0);
   useEffect(() => {
-   if (isTimerExpired){
-    // console.log("EXPIRED")
-    // handleSubmit()
-    // FINN EN MÅTE Å SUBMITTE FORMEN 
-    navigate("/waitingroom")
-   }
- },[isTimerExpired]); 
+    if (isTimerExpired) {
+      // console.log("EXPIRED")
+      // handleSubmit()
+      // FINN EN MÅTE Å SUBMITTE FORMEN
+      navigate("/waitingroom");
+    }
+  }, [isTimerExpired]);
 
   // TODO: replace dummydata
   let name = "RAT 7: sequence diagrams";
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
+  const onSubmit = (formData) => {
     // TODO: save answers
-    console.log("kommer inn her")
-    props.setData(data);
-    console.log(data); //DATA FRA RAT
+    console.log("kommer inn her");
+    props.setData(formData.answers.map(i => parseInt(i, 10)));
+    console.log(formData); //DATA FRA RAT
   };
 
   const quit = () => {
@@ -77,75 +77,63 @@ export const RatCard = (props) => {
   }'
   */
 
-  
-
-  const getTime = () => { // Replace with getting actual time. submit on expire 
+  const getTime = () => {
+    // Replace with getting actual time. submit on expire
     const time = new Date();
     return time.setSeconds(time.getSeconds() + 1200);
-  }
-  console.log(props.sporsmaal)
+  };
+  console.log(props.sporsmaal);
   return (
     <Card>
       <CardHeader>
         <Heading size="md">{name}</Heading>
         <Text>{props.ratType} RAT</Text>
-        <CountdownTimer targetDate={getTime()} setIsTimerExpired={setIsTimerExpired}></CountdownTimer>
+        <CountdownTimer
+          targetDate={getTime()}
+          setIsTimerExpired={setIsTimerExpired}
+        ></CountdownTimer>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {props.sporsmaal.length >1 && Object.keys(props.sporsmaal["questions"]).map((i) => {
-          console.log(props.sporsmaal["questions"][i].answers[2]);
-          return (
-            <CardBody>
-              <Stack
-                divider={<StackDivider />}
-                spacing="4"
-              >
-                {/* Questions, for each:  */}
-                <Box>
-                  <Text>{props.sporsmaal["questions"][i].question}</Text>
-
-                  {/* Answers: for alternative in question: radiobutton + text  */}
-
-                  <RadioGroup>
-                    <Stack py={2}>
-                      {props.sporsmaal["questions"][i].answers.map((alt,j) => (
-                        
-                        <Radio
-                          {...register(i)}
-                          value={j.toString()}
-                          key={j}
-                          onClick={()=>setSelected(j)}
-                        >
-                          {alt}
-                        </Radio>
-                      ))}
-                    </Stack>
-                  </RadioGroup>
-                </Box>
-              </Stack>
-            </CardBody>
-          );
-        })}
-        <CardFooter>
-          <Stack
-            direction={"row"}
-            spacing={2}
-          >
-            <Button
-              type="submit"
-              colorScheme="blue"
-            >
-              Test
-            </Button>
-            <Button
-              onClick={quit}
-              colorScheme="orange"
-            >
-              Quit
-            </Button>
-          </Stack>
-        </CardFooter>
-      </form>
+      {props.sporsmaal && (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {props.sporsmaal &&
+            props.sporsmaal.map((question, i) => {
+              console.log(question);
+              return (
+                <CardBody>
+                  <Stack divider={<StackDivider />} spacing="4">
+                    <Box>
+                      <Text>{question.question}</Text>
+                      <RadioGroup>
+                        <Stack py={2}>
+                          {question.answers.map((alt, j) => (
+                            <Radio
+                              {...register("answers." + i)}
+                              value={j.toString()}
+                              key={j}
+                              onClick={() => setSelected(j)}
+                            >
+                              {alt}
+                            </Radio>
+                          ))}
+                        </Stack>
+                      </RadioGroup>
+                    </Box>
+                  </Stack>
+                </CardBody>
+              );
+            })}
+          <CardFooter>
+            <Stack direction={"row"} spacing={2}>
+              <Button type="submit" colorScheme="blue">
+                Test
+              </Button>
+              <Button onClick={quit} colorScheme="orange">
+                Quit
+              </Button>
+            </Stack>
+          </CardFooter>
+        </form>
+      )}
     </Card>
   );
 };

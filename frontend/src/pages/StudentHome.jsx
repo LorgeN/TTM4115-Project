@@ -9,104 +9,104 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { json, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import mqtt from "precompiled-mqtt";
 
 export const StudentHome = () => {
-  const [isHelpRequested, setHelpRequested] = useState(false);
   const navigate = useNavigate();
+  const [isHelpRequested, setHelpRequested] = useState(false);
   const [qNum, setqNum] = useState(0);
   const [client, setClient] = useState(null);
-  const [isSubed, setIsSub] = useState(false);
-
-  const [connectStatus, setConnectStatus] = useState("Connect");
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
-    if (!client){
+    if (!client) {
       const options = {
-        clientId: 'clientId-' + Math.random().toString(16).substr(2, 8),
+        clientId: "clientId-" + Math.random().toString(16).substr(2, 8),
         username: "komsys",
-        password: "komsys123"
-      }
-      console.log("trying to connect")
-      setClient(mqtt.connect("wss://mqtt-broker.tanberg.org:9001/mqtt", options));
-    }
-    if (client) {
-      client.on('connect', () => {
-        console.log("connect")
-        if (!isAuthenticated){
-          const authData = {
-            "event": "auth",
-            "data": {
-              "scope": "student",
-              "group": localStorage.getItem("TeamNumber"),
-              "id": localStorage.getItem("User")
-            }
-          }
-          client.publish("ttm4115project/sessions/inbound", JSON.stringify(authData), 0)
-          client.subscribe("ttm4115project/sessions/outbound", "0")
-        }
-        client.subscribe("takerattma4115", "0", (error) => {
-          if (error) {
-            console.log('Subscribe to topics error', error)
-            return
-          }
-          setIsSub(true)
-        });
-        setConnectStatus('Connected');
-      });
-      client.on('error', (err) => {
-        console.error('Connection error: ', err);
+        password: "komsys123",
+      };
+      console.log("trying to connect");
+      setClient(
+        mqtt.connect("wss://mqtt-broker.tanberg.org:9001/mqtt", options)
+      );
+    } else {
+      client.on("error", (err) => {
+        console.error("Connection error: ", err);
         client.end();
       });
-      client.on('reconnect', () => {
-        setConnectStatus('Reconnecting');
+
+      client.on("reconnect", () => {
+        console.log("Reconnecting...");
       });
-      client.on('message', (topic, message) => {
-        //console.log(JSON.parse(message))
-        console.log(JSON.parse(message).event);
-        if (JSON.parse(message).event === 'queue_update') {
-          setqNum(JSON.parse(message).data.position)
 
-     
-           
+      client.on("message", (topic, message) => {
+        const res = JSON.parse(message);
+        console.log(res);
 
-        
+        if (res.event === "queue_update") {
+          setqNum(res.data.position);
+        } else if (res.event === "session_created") {
+          localStorage.setItem(
+            "inbound",
+            "ttm4115project/" + res.data.topic_inbound
+          );
+          const outbound = "ttm4115project/" + res.data.topic_outbound;
+          localStorage.setItem("outbound", outbound);
+          client.subscribe(outbound, "0");
         }
+      });
 
-
-        
+      client.on("connect", () => {
+        console.log("connect");
+        client.subscribe("ttm4115project/sessions/outbound", 0);
       });
     }
-  }, [client]); /*  connection useEffect */
-  const onRequestHelp = () => {
-    /*console.log(JSON.parse(JSON.stringify({
-      "event": "queue_update",
-      "data": {
-        "position": "1",
-      },
-    }))) */  //pOSITION EXAMPLE JSON
-  
-    
-    
 
-    
-    if (isHelpRequested) {
-      return console.log("Help already requested")
-      
-    }
-    const helpData = {
-      "event": "request_help",
-      "data": {
-        "student": localStorage.getItem("User"),
-        "team": localStorage.getItem("TeamNumber")
+    return () => {
+      if (client) {
+        client.end();
       }
+    };
+  }, [client]); /*  connection useEffect */
+
+  useEffect(() => {
+    if (client && !isAuthenticated) {
+      console.log("authenticating");
+      const authData = {
+        event: "auth",
+        data: {
+          scope: "student",
+          group: localStorage.getItem("TeamNumber"),
+          id: localStorage.getItem("User"),
+        },
+      };
+      console.log(authData);
+      client.publish(
+        "ttm4115project/sessions/inbound",
+        JSON.stringify(authData),
+        0
+      );
+      setIsAuthenticated(true);
     }
-    console.log("help")
-    client.publish("ttm4115project/sessions/inbound", JSON.stringify(helpData))
-    setHelpRequested(!isHelpRequested);
-    //TODO: send request
+  }, [client, isAuthenticated]);
+
+  const onRequestHelp = () => {
+    if (isHelpRequested) {
+      console.log("Help already requested");
+      return;
+    }
+
+    const helpData = {
+      event: "request_help",
+      data: {
+        student: localStorage.getItem("User"),
+        team: localStorage.getItem("TeamNumber"),
+      },
+    };
+    console.log("help");
+    client.publish(localStorage.getItem("inbound"), JSON.stringify(helpData));
+    setHelpRequested(true);
   };
 
   const startRat = () => {
@@ -115,10 +115,7 @@ export const StudentHome = () => {
   };
 
   return (
-    <Container
-      maxW={"4xl"}
-      marginTop={"50"}
-    >
+    <Container maxW={"4xl"} marginTop={"50"}>
       <Card>
         <CardHeader>
           <Heading size="md">
@@ -127,21 +124,12 @@ export const StudentHome = () => {
           </Heading>
         </CardHeader>
         <CardBody>
-          <VStack
-            py={10}
-            spacing={10}
-          >
-            <Button
-              onClick={startRat}
-              colorScheme={"blue"}
-            >
+          <VStack py={10} spacing={10}>
+            <Button onClick={startRat} colorScheme={"blue"}>
               Take RAT
             </Button>
             {/* no need to input reason */}
-            <Button
-              onClick={onRequestHelp}
-              colorScheme={"teal"}
-            >
+            <Button onClick={onRequestHelp} colorScheme={"teal"}>
               Request help
             </Button>
             {isHelpRequested && (
@@ -152,18 +140,12 @@ export const StudentHome = () => {
                 shadow={"xl"}
               >
                 <Stack align={"center"}>
-                  <Heading
-                    color={"gray.700"}
-                    size={"md"}
-                  >
+                  <Heading color={"gray.700"} size={"md"}>
                     {" "}
                     You are number
                   </Heading>
                   <Heading color={"orange"}> {qNum}</Heading>
-                  <Heading
-                    color={"gray.700"}
-                    size={"md"}
-                  >
+                  <Heading color={"gray.700"} size={"md"}>
                     {" "}
                     in line
                   </Heading>

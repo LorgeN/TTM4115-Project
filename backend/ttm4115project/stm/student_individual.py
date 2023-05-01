@@ -27,7 +27,7 @@ class StudentIndividualStm(MachineBase):
                 source="s_rat_individual",
                 target="final",
                 trigger="message_question_answer",
-                action="process_answer(*)",
+                action="process_answers(*)",
             ),
         ]
         return states, transitions
