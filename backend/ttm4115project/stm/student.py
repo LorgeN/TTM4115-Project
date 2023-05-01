@@ -1,6 +1,5 @@
-from ttm4115project.stm.base import State, Transition, MachineBase, make_mqtt_callback
-from ttm4115project.stm.student_individual import StudentIndividualStm
-from ttm4115project.rat import RAT, RATQuestion
+from ttm4115project.stm.base import State, Transition, MachineBase
+from ttm4115project.rat import RAT
 from ttm4115project.mqtt_handle import MQTTHandle, MQTTMessage
 from typing import List, Tuple
 from ttm4115project.utils.logging import create_logger
@@ -9,7 +8,7 @@ from enum import Enum
 LOGGER = create_logger(__name__)
 
 
-class CompletionStage:
+class CompletionStage(Enum):
     NONE = 0, "s_student_idle"
     INDIVIDUAL_RAT = 1, "s_student_rat"
     TEAM_RAT = 2, "s_team_rat"
@@ -77,9 +76,9 @@ class StudentStm(MachineBase):
             ),
             Transition(
                 source="s_student_rat",
-                targets="s_student_rat s_student_waiting_team",
-                trigger="system_student_rat_completed",
-                function=self.check_individual_complete,
+                targets="s_student_waiting_team s_student_rat",
+                trigger="message_question_answer",
+                function=self.process_answers,
             ),
             Transition(
                 source="s_student_waiting_team",
@@ -105,6 +104,11 @@ class StudentStm(MachineBase):
                 trigger="message_request_help",
             ),
             Transition(
+                source="s_student_complete",
+                target="s_student_require_help",
+                trigger="message_request_help",
+            ),
+            Transition(
                 source="s_student_require_help",
                 trigger="system_request_completed",
                 targets="s_student_rat s_team_rat",
@@ -121,12 +125,37 @@ class StudentStm(MachineBase):
         return states, transitions
 
     def start_individual_rat(self):
-        stm = StudentIndividualStm(
-            f"{self.name}_individual", self.name, self.handle, self.rat
+        self.answers = []
+
+        self.handle.publish(
+            MQTTMessage(
+                event="questions",
+                data=[
+                    {
+                        "question": question.question,
+                        "answers": question.answers,
+                    }
+                    for question in self.rat.questions
+                ],
+            )
         )
-        self.handle.on_message = make_mqtt_callback(self.driver, [self.name, stm.name])
-        stm.install(self.driver, subscribe=False)
         self.stage = CompletionStage.INDIVIDUAL_RAT
+
+    def process_answers(self, answers: List[int]):
+        LOGGER.debug(f"Received answers {answers}")
+        if len(answers) != len(self.rat.questions) or any(
+            answer < 0 or answer >= len(self.rat.questions[i].answers)
+            for i, answer in enumerate(answers)
+        ):
+            self.handle.publish(MQTTMessage(event="invalid_answers"))
+            return "s_student_rat"
+
+        # TODO: Do something with this? Save it?
+        self.answers = answers
+        self.send_event(
+            "stm_session_manager", "system_student_rat_completed", team=self.team
+        )
+        return "s_student_waiting_team"
 
     def start_team_rat(self):
         self.stage = CompletionStage.TEAM_RAT
@@ -142,19 +171,6 @@ class StudentStm(MachineBase):
             student=self.name,
             team=self.team,
         )
-
-    def check_individual_complete(self, *args, **kwargs):
-        if kwargs.get("name", None) != f"{self.name}_individual":
-            return "s_rat_individual"
-
-        # Redirect events back to this stm
-        self.handle.on_message = make_mqtt_callback(self.driver, [self.name])
-
-        self.send_event(
-            "stm_session_manager", "system_student_rat_completed", team=self.team
-        )
-
-        return "s_student_waiting_team"
 
     def notify_queue_update(self, position: int):
         LOGGER.info(f"Queue update: {position}")
