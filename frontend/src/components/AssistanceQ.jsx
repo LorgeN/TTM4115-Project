@@ -4,6 +4,9 @@ import {
     VStack,
     HStack,
     IconButton,
+    Button,
+    Text,
+    Center
   } from "@chakra-ui/react";
   
   import { CheckIcon } from "@chakra-ui/icons";
@@ -11,58 +14,74 @@ import {
   import { StatusCard } from "../components/StatusCard";
   
   export const AssistanceQ = () => {
-    // TODO: publish and subscribe
-    // TODO: seperate Q cards as own component
-    // TODO: seperate status cards as own component
-  
-    const [dummyQ, setDummyQ] = useState([2, 5, 7, 1, 8, 7, 6, 4, 13, 23, 21]);
-  
-    const helped = () => {
-      let cpy = [...dummyQ];
-      cpy.shift();
-      setDummyQ(cpy);
-    };
-  
-    function getCard(index, text) {
+
+    const [showNext, setShowNext] = useState(false)
+    const qLength = 10 // REPLACE   
+    
+    const startHelp = () => {
+      setShowNext(!showNext)
+      if (!showNext){
+        return
+      }
+      // publish ready to help 
+      // receive name and number?? 
+
+    }
+    const finishHelp = () => {
+      // PUBLISH help finish
+    }
+
+    const helpCard = () => {
+      // PUBLISH
+      // Info from subscription: who to help
+      let name = "ola" // REPLACE
+      let group = 2 // REPLACE
+
       return (
-        <HStack>
-          <Card
-            shadow={"lg"}
-            minH={15}
-            p={5}
-            backgroundColor={"gray.50"}
-            minW={"25%"}
-            display={"flex"}
-          >
-            <Heading fontSize={"md"}>Group number {text}</Heading>
-          </Card>
-          {index === 0 ? (
+        <Card
+        shadow={"lg"}
+        minH={15}
+        p={5}
+        backgroundColor={"gray.50"}
+        minW={"55%"}
+        display={"flex"}
+        >
+            <Center>
+            <VStack>
+            <Heading fontSize={"md"}>Next in line:</Heading>
+            <Text fontSize={"md"}>{name}</Text>
+            <Text fontSize={"md"}>Group number {group}</Text>
             <IconButton
               size={"sm"}
               colorScheme="green"
               icon={<CheckIcon />}
-              onClick={helped}
+              onClick={finishHelp}
             ></IconButton>
-          ) : null}
-        </HStack>
-      );
+          </VStack>
+            </Center>
+          </Card>
+      )
     }
-  
+
     return (
       
             <HStack>
-              <VStack minW={"50%"}>
+              <VStack minW={"50%"} spacing={10}>
+                <VStack>
+
                 <Heading>Assistance queue</Heading>
                 <Heading
                   color={"gray.600"}
                   size={"sm"}
-                >
-                  Queue length: {dummyQ.length}
+                  >
+                  Queue length: {qLength}
                 </Heading>
-                  <VStack maxH={310} overflowY={"scroll"}>
-                {dummyQ.map((group, i) => getCard(i, group))}
-  
                   </VStack>
+                <Button
+                onClick={startHelp}>
+                  I want to help
+                </Button>
+                  {showNext && helpCard()}
               </VStack>
               <VStack minW={"50%"}>
                 <Heading>RAT status</Heading>
@@ -71,7 +90,6 @@ import {
                <StatusCard type={"team"}></StatusCard>
               </VStack>
             </HStack>
-
     );
   };
   
