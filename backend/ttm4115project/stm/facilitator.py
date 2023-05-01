@@ -78,7 +78,7 @@ class Facilitator(MachineBase):
     def send_status(self) -> None:
         self.handle.publish(
             MQTTMessage(
-                event="message_status",
+                event="status",
                 data={
                     "busy": self.busy,
                 },
@@ -98,7 +98,7 @@ class Facilitator(MachineBase):
 
             self.handle.publish(
                 MQTTMessage(
-                    event="message_request_accepted",
+                    event="request_accepted",
                     data={"student": request.student, "team": request.team},
                 )
             )
@@ -107,7 +107,7 @@ class Facilitator(MachineBase):
         self.busy = False
 
     def notify_num_requests(self, new_len: int) -> None:
-        self.handle.publish(MQTTMessage(event="message_num_requests", data=new_len))
+        self.handle.publish(MQTTMessage(event="num_requests", data=new_len))
 
     def create_new_rat(self) -> None:
         print("create_new_rat")
