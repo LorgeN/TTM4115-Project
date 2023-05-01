@@ -21,6 +21,8 @@ export const TaHome = () => {
   } = useDisclosure();
   const [client] = useState(createClient());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [helpRequest, setHelpRequest] = useState();
+  const [queueLength, setQueueLength] = useState(0);
 
   useEffect(() => {
     client.on("message", (topic, message) => {
@@ -35,6 +37,10 @@ export const TaHome = () => {
         const outbound = "ttm4115project/" + res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
         client.subscribe(outbound, "0");
+      } else if (res.event === "request_accepted") {
+        setHelpRequest(res.data);
+      } else if (res.event === "num_requests") {
+        setQueueLength(res.data);
       }
     });
 
@@ -69,7 +75,7 @@ export const TaHome = () => {
       <Card>
         <CardHeader></CardHeader>
         <CardBody paddingBottom={20}>
-          <AssistanceQ></AssistanceQ>
+          <AssistanceQ client={client} helpRequest={helpRequest} setHelpRequest={setHelpRequest} queueLength={queueLength}></AssistanceQ>
         </CardBody>
         <Center paddingBottom={10}>
           <Button
