@@ -10,21 +10,23 @@ import { WaitingRoom } from "./pages/WaitingRoom";
 import { Login } from "./pages/Login";
 /*import { Connection } from './pages/MQTTExperiment';*/
 import { TaHome } from "./pages/TaHome";
-import HelpButton from "./components/HelpButton";
+import { Layout } from "./components/Layout";
 
 function App() {
   // 2. Wrap ChakraProvider at the root of your app
   return (
     <ChakraProvider>
-      <HelpButton />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/studenthome" element={<StudentHome />} />
-          <Route path="/taHome" element={<TaHome />} />
-          <Route path="takeirat" element={<TakeIRat />} />
-          <Route path="taketrat" element={<TakeTRat />} />
-          <Route path="waitingroom" element={<WaitingRoom />} />
+
+          <Route element={<Layout />}>
+            <Route path="/studenthome" element={<StudentHome />} />
+            <Route path="/taHome" element={<TaHome />} />
+            <Route path="takeirat" element={<TakeIRat />} />
+            <Route path="taketrat" element={<TakeTRat />} />
+            <Route path="waitingroom" element={<WaitingRoom />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </ChakraProvider>
