@@ -3,17 +3,17 @@ import {
   CardHeader,
   CardBody,
   Container,
-  Divider,
   useDisclosure,
   Button,
   Center,
   VStack,
+  Divider
 } from "@chakra-ui/react";
 import { AssistanceQ } from "../components/AssistanceQ";
 import { AddRatModal } from "../components/AddRatModal";
+import { ManageRats } from "../components/ManageRats"
 import { useState, useEffect } from "react";
-import { createClient } from "../utils/client";
-import { ManageRats } from "../components/ManageRats";
+import { CLIENT } from "../utils/client";
 
 export const TaHome = () => {
   const {
@@ -21,14 +21,15 @@ export const TaHome = () => {
     onOpen: onAddOpen,
     onClose: onAddClose,
   } = useDisclosure();
-  const [client] = useState(createClient());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [helpRequest, setHelpRequest] = useState();
   const [queueLength, setQueueLength] = useState(0);
   const [showAdm, setShowAdm] = useState(false)
 
   useEffect(() => {
-    client.on("message", (topic, message) => {
+    CLIENT.subscribe("ttm4115project/sessions/outbound", 0);
+
+    const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
 
@@ -39,19 +40,21 @@ export const TaHome = () => {
         );
         const outbound = "ttm4115project/" + res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
-        client.subscribe(outbound, "0");
+        CLIENT.subscribe(outbound, "0");
       } else if (res.event === "request_accepted") {
         setHelpRequest(res.data);
       } else if (res.event === "num_requests") {
         setQueueLength(res.data);
       }
-    });
+    };
 
-    client.on("connect", () => {
-      console.log("connect");
-      client.subscribe("ttm4115project/sessions/outbound", 0);
-    });
-  }, [client]);
+    CLIENT.on("message", listener);
+
+    return () => {
+      CLIENT.unsubscribe("ttm4115project/sessions/outbound");
+      CLIENT.removeListener("message", listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -64,14 +67,14 @@ export const TaHome = () => {
         },
       };
       console.log(authData);
-      client.publish(
+      CLIENT.publish(
         "ttm4115project/sessions/inbound",
         JSON.stringify(authData),
         0
       );
       setIsAuthenticated(true);
     }
-  }, [client, isAuthenticated]);
+  }, [isAuthenticated]);
 
   return (
     <Container
@@ -82,7 +85,6 @@ export const TaHome = () => {
         <CardHeader></CardHeader>
         <CardBody >
           <AssistanceQ
-            client={client}
             helpRequest={helpRequest}
             setHelpRequest={setHelpRequest}
             queueLength={queueLength}
@@ -120,7 +122,6 @@ export const TaHome = () => {
         </Center>
             {showAdm && <ManageRats></ManageRats>}
         </CardBody>
-
       </Card>
     </Container>
   );

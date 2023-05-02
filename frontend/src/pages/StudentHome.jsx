@@ -10,17 +10,18 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "../utils/client";
+import { CLIENT } from "../utils/client";
 
 export const StudentHome = () => {
   const navigate = useNavigate();
   const [isHelpRequested, setHelpRequested] = useState(false);
   const [qNum, setqNum] = useState(0);
-  const [client] = useState(createClient());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    client.on("message", (topic, message) => {
+    CLIENT.subscribe("ttm4115project/sessions/outbound", 0);
+
+    const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
 
@@ -33,21 +34,17 @@ export const StudentHome = () => {
         );
         const outbound = "ttm4115project/" + res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
-        client.subscribe(outbound, "0");
-      }
-    });
-
-    client.on("connect", () => {
-      console.log("connect");
-      client.subscribe("ttm4115project/sessions/outbound", 0);
-    });
-
-    return () => {
-      if (client) {
-        client.end();
+        CLIENT.subscribe(outbound, "0");
       }
     };
-  }, [client]); /*  connection useEffect */
+
+    CLIENT.on("message", listener);
+
+    return () => {
+      CLIENT.unsubscribe("ttm4115project/sessions/outbound");
+      CLIENT.removeListener("message", listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -61,14 +58,14 @@ export const StudentHome = () => {
         },
       };
       console.log(authData);
-      client.publish(
+      CLIENT.publish(
         "ttm4115project/sessions/inbound",
         JSON.stringify(authData),
         0
       );
       setIsAuthenticated(true);
     }
-  }, [client, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const onRequestHelp = () => {
     if (isHelpRequested) {
@@ -84,7 +81,7 @@ export const StudentHome = () => {
       },
     };
     console.log("help");
-    client.publish(localStorage.getItem("inbound"), JSON.stringify(helpData));
+    CLIENT.publish(localStorage.getItem("inbound"), JSON.stringify(helpData));
     setHelpRequested(true);
   };
 

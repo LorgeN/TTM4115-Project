@@ -11,8 +11,9 @@ LOGGER = create_logger(__name__)
 class CompletionStage(Enum):
     NONE = 0, "s_student_idle"
     INDIVIDUAL_RAT = 1, "s_student_rat"
-    TEAM_RAT = 2, "s_team_rat"
-    BOTH = 3, "s_student_complete"
+    WAIT_TEAM_RAT = 2, "s_student_waiting_team"
+    TEAM_RAT = 3, "s_team_rat"
+    BOTH = 4, "s_student_complete"
 
 
 class StudentStm(MachineBase):
@@ -155,6 +156,7 @@ class StudentStm(MachineBase):
         self.send_event(
             "stm_session_manager", "system_student_rat_completed", team=self.team
         )
+        self.stage = CompletionStage.WAIT_TEAM_RAT
         return "s_student_waiting_team"
 
     def start_team_rat(self):

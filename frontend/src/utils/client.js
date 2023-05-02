@@ -1,5 +1,7 @@
 import mqtt from "precompiled-mqtt";
 
+export const CLIENT = createClient();
+
 export function createClient() {
   const options = {
     clientId: "clientId-" + Math.random().toString(16).substring(2, 10),

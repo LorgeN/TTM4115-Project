@@ -10,18 +10,13 @@ import {
 } from "@chakra-ui/react";
 
 import { CheckIcon } from "@chakra-ui/icons";
-import { useState } from "react";
 import { StatusCard } from "../components/StatusCard";
+import { CLIENT } from "../utils/client";
 
-export const AssistanceQ = ({
-  client,
-  helpRequest,
-  setHelpRequest,
-  queueLength,
-}) => {
+export const AssistanceQ = ({ helpRequest, setHelpRequest, queueLength }) => {
   const startHelp = () => {
     if (queueLength > 0) {
-      client.publish(
+      CLIENT.publish(
         localStorage.getItem("inbound"),
         JSON.stringify({ event: "request_accept" }),
         0
@@ -30,7 +25,7 @@ export const AssistanceQ = ({
   };
 
   const finishHelp = () => {
-    client.publish(
+    CLIENT.publish(
       localStorage.getItem("inbound"),
       JSON.stringify({ event: "request_completed" }),
       0

@@ -161,8 +161,8 @@ class SessionManager(MachineBase):
                 data={
                     "student_id": student_id,
                     "team_id": team_id,
-                    "topic_inbound": f"{topic}/inbound",
-                    "topic_outbound": f"{topic}/outbound",
+                    "topic_inbound": f"{self.client.base_topic}/{topic}/inbound",
+                    "topic_outbound": f"{self.client.base_topic}/{topic}/outbound",
                 },
             )
         )
@@ -182,8 +182,8 @@ class SessionManager(MachineBase):
                 event="facilitator_session_created",
                 data={
                     "facilitator_id": facilitator_id,
-                    "topic_inbound": f"{topic}/inbound",
-                    "topic_outbound": f"{topic}/outbound",
+                    "topic_inbound": f"{self.client.base_topic}/{topic}/inbound",
+                    "topic_outbound": f"{self.client.base_topic}/{topic}/outbound",
                 },
             )
         )
