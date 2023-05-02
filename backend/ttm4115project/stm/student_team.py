@@ -36,7 +36,7 @@ class StudentTeamStm(MachineBase):
             Transition(
                 source="initial",
                 target="s_rat_team",
-                action="send_member_event('system_team_rat_start')"
+                action="send_member_event('system_team_rat_start')",
             ),
             Transition(
                 source="s_rat_team",
@@ -53,6 +53,8 @@ class StudentTeamStm(MachineBase):
         self.previous_answers = []
 
         question = self.rat.questions[self.current_question]
+
+        self.handle.publish(MQTTMessage(event="start_team_rat"))
 
         self.handle.publish(
             MQTTMessage(
