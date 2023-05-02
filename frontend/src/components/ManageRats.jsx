@@ -48,10 +48,10 @@ const tableEntries = () => {
       <Td isNumeric>{rat.numStudents}</Td>
       <Td isNumeric>{rat.numTeams}</Td>
       <Td isNumeric>
-              <IconButton
-                rounded={"3xl"}
-                icon={<DeleteIcon />}
-              ></IconButton>
+          <IconButton
+            rounded={"3xl"}
+            icon={<StarIcon />}
+          ></IconButton>
               <IconButton
                 mx={1}
                 rounded={"3xl"}
@@ -59,7 +59,7 @@ const tableEntries = () => {
               ></IconButton>
               <IconButton
                 rounded={"3xl"}
-                icon={<StarIcon />}
+                icon={<DeleteIcon />}
               ></IconButton>
             </Td>
     </Tr>
