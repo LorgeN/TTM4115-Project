@@ -2,18 +2,15 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer,
   IconButton,
-  HStack,
 } from "@chakra-ui/react";
 import { DeleteIcon, EditIcon, StarIcon } from "@chakra-ui/icons";
 
-const ratList = [
+const ratList = [ // TODO: REPLACE DUMMY DATA 
   {
     name: "Sequence diagrams",
     isActive: "Yes",

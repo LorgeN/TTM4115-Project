@@ -20,16 +20,16 @@ import { useEffect, useState } from "react";
         if (props.type === "individual"){
             setTitle("Individual")
             setFooter("Students")
-            setTopic("individual") // replace
-            setTotal(42) // replace
-            setCompleted(13) // Replace
+            setTopic("individual") // TODO: replace 
+            setTotal(43) // TODO: replace
+            setCompleted(29) // TODO: Replace
         }
         else {
             setTitle("Team")
             setFooter("Teams")
-            setTopic("Team") //Replace
-            setTotal(16) // Replace
-            setCompleted(4) // Replace
+            setTopic("Team") // TODO: Replace
+            setTotal(16) // TODO: Replace
+            setCompleted(2) // TODO: Replace
         }
      },[completed]); 
 
@@ -43,7 +43,6 @@ import { useEffect, useState } from "react";
       >
         <Center>
             <VStack spacing={5}>
-
         <Heading
         size={"md"}
         >
@@ -53,7 +52,6 @@ import { useEffect, useState } from "react";
         color={"green"}
         size={"md"}
         >
-        {/* TODO Replace */}
         {completed}/{total} 
       </Heading>
         <Heading
@@ -63,8 +61,6 @@ import { useEffect, useState } from "react";
         {footer} have completed
       </Heading>
           </VStack>
-
-
         </Center>
       </Card>
     );

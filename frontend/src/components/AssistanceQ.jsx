@@ -74,7 +74,7 @@ export const AssistanceQ = ({
             Queue length: {queueLength}
           </Heading>
         </VStack>
-        {!helpRequest && <Button onClick={startHelp}>I want to help</Button>}
+        {!helpRequest && queueLength>0 && <Button onClick={startHelp}>I want to help</Button>}
         {helpRequest && helpCard()}
       </VStack>
       <VStack minW={"50%"}>
