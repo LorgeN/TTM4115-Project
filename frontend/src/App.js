@@ -22,11 +22,11 @@ function App() {
 
           <Route element={<Layout />}>
             <Route path="/studenthome" element={<StudentHome />} />
-            <Route path="/taHome" element={<TaHome />} />
             <Route path="takeirat" element={<TakeIRat />} />
             <Route path="taketrat" element={<TakeTRat />} />
             <Route path="ratcomplete" element={<RatComplete />} />
           </Route>
+            <Route path="/taHome" element={<TaHome />} />
         </Routes>
       </BrowserRouter>
     </ChakraProvider>
