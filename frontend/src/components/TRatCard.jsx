@@ -48,7 +48,7 @@ export const TRatCard = (props) => {
             <Stack divider={<StackDivider />} spacing="4">
               <Box>
                 <Text>{props.question.question}</Text>
-                <RadioGroup value={props.selected ?? ""}>
+                <RadioGroup value={props.selected?.toString() ?? ""}>
                   <Stack py={2}>
                     {props.question.answers.map((alt, i) => (
                       <Radio
@@ -69,7 +69,7 @@ export const TRatCard = (props) => {
         <CardFooter>
           <Stack direction={"row"} spacing={2}>
             <Button type="submit" colorScheme="blue">
-              Test
+              Confirm
             </Button>
           </Stack>
         </CardFooter>

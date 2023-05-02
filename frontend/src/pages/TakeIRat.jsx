@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import HelpButton from "../components/HelpButton";
 import { CLIENT } from "../utils/client";
 
-export const TakeRat = () => {
+export const TakeIRat = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(); //data fra RAT
   const [sporsmaal, setSporsmaal] = useState();
@@ -25,7 +25,7 @@ export const TakeRat = () => {
         if (error) {
           console.log("Publish error: ", error);
         } else {
-          navigate("/waitingroom");
+          navigate("/taketrat");
         }
       }
     );

@@ -84,8 +84,7 @@ export const StudentHome = () => {
   };
 
   const startRat = () => {
-    // get the RAT
-    navigate("/takerat");
+    navigate("/takeirat");
   };
 
   return (

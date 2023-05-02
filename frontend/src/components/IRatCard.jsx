@@ -27,7 +27,7 @@ export const RatCard = (props) => {
       // console.log("EXPIRED")
       // handleSubmit()
       // FINN EN MÅTE Å SUBMITTE FORMEN
-      navigate("/waitingroom");
+      navigate("/taketrat");
     }
   }, [isTimerExpired]);
 
@@ -39,11 +39,6 @@ export const RatCard = (props) => {
     const fixedFormData = formData.answers.map((i) => parseInt(i, 10));
     props.setData(fixedFormData);
     console.log(fixedFormData);
-  };
-
-  const quit = () => {
-    // TODO: save progredd
-    navigate("/studenthome");
   };
 
   const getTime = () => {
@@ -93,10 +88,7 @@ export const RatCard = (props) => {
           <CardFooter>
             <Stack direction={"row"} spacing={2}>
               <Button type="submit" colorScheme="blue">
-                Test
-              </Button>
-              <Button onClick={quit} colorScheme="orange">
-                Quit
+                Submit
               </Button>
             </Stack>
           </CardFooter>
