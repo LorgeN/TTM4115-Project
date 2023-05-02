@@ -28,11 +28,6 @@ export const TRatCard = (props) => {
     };
   }, [watch]);
 
-  const onSubmit = (data) => {
-    props.setSelected(undefined);
-    props.onSubmit(data);
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -42,7 +37,7 @@ export const TRatCard = (props) => {
           Question {props.currentQuestion + 1}
         </Text>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(props.onSubmit)}>
         {props.question && (
           <CardBody>
             <Stack divider={<StackDivider />} spacing="4">

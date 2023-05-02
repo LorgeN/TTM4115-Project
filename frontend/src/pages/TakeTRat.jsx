@@ -47,6 +47,7 @@ export const TakeTRat = () => {
         setStarted(true);
       } else if (res.event === "new_question") {
         setQuestion(res.data);
+        setSelected(undefined);
       } else if (res.event === "question_answer_select") {
         setSelected(res.data.answer);
       } else if (res.event === "question_answer_confirm") {
