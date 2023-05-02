@@ -95,7 +95,7 @@ class StudentTeamStm(MachineBase):
             MQTTMessage(
                 event="question_answer_select",
                 data={
-                    "answer": answer,
+                    "answer": self.current_answer,
                 },
             )
         )

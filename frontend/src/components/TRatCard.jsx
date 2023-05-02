@@ -16,7 +16,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 export const TRatCard = (props) => {
-  const { register, handleSubmit, watch, reset } = useForm();
+  const { register, handleSubmit, watch } = useForm();
 
   useEffect(() => {
     const sub = watch((data) => {
@@ -26,12 +26,11 @@ export const TRatCard = (props) => {
     return () => {
       sub.unsubscribe();
     };
-  });
+  }, [watch]);
 
   const onSubmit = (data) => {
+    props.setSelected(undefined);
     props.onSubmit(data);
-    reset();
-    props.setSelected();
   };
 
   return (
@@ -49,7 +48,7 @@ export const TRatCard = (props) => {
             <Stack divider={<StackDivider />} spacing="4">
               <Box>
                 <Text>{props.question.question}</Text>
-                <RadioGroup>
+                <RadioGroup value={props.selected ?? ""}>
                   <Stack py={2}>
                     {props.question.answers.map((alt, i) => (
                       <Radio

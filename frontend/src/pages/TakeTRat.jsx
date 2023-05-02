@@ -59,6 +59,7 @@ export const TakeTRat = () => {
     <Container marginTop={10}>
       <TRatCard
         question={question}
+        selected={selected}
         setSelected={setSelected}
         onSubmit={onSubmit}
       ></TRatCard>
