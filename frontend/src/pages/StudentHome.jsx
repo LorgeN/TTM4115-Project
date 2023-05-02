@@ -28,6 +28,8 @@ export const StudentHome = () => {
       if (res.event === "queue_update") {
         setqNum(res.data.position);
       } else if (res.event === "session_created") {
+        CLIENT.unsubscribe("ttm4115project/sessions/outbound");
+
         localStorage.setItem("inbound", res.data.topic_inbound);
         const outbound = res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
@@ -38,7 +40,6 @@ export const StudentHome = () => {
     CLIENT.on("message", listener);
 
     return () => {
-      CLIENT.unsubscribe("ttm4115project/sessions/outbound");
       CLIENT.removeListener("message", listener);
     };
   }, []);

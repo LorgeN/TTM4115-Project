@@ -44,7 +44,7 @@ export const TakeTRat = () => {
       if (res.event === "new_question") {
         setQuestion(res.data);
       } else if (res.event === "question_answer_select") {
-        // TODO: Implement
+        setSelected(res.data.answer)
       }
     };
 
