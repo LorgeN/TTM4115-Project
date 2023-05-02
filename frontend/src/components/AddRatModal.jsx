@@ -255,7 +255,7 @@ export const AddRatModal = (props) => {
               colorScheme="orange"
               m={1}
               rounded={"3xl"}
-              onClick={addQ} //submit
+              onClick={props.onClose} // TODO: replace with function for publishing rat 
             >
               Save
             </Button>
