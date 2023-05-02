@@ -23,8 +23,8 @@ export const TakeTRat = () => {
     );
   };
 
-  useEffect(() => {
-    if (!selected) {
+  const publishSelected = (newSelected) => {
+    if (newSelected === undefined || newSelected === null) {
       return;
     }
 
@@ -32,11 +32,11 @@ export const TakeTRat = () => {
       localStorage.getItem("inbound"),
       JSON.stringify({
         event: "question_answer",
-        data: { answer: selected },
+        data: { answer: newSelected },
       }),
       0
     );
-  }, [selected]);
+  };
 
   useEffect(() => {
     const listener = (topic, message) => {
@@ -53,7 +53,9 @@ export const TakeTRat = () => {
         const correct = res.data.is_correct;
         toast({
           title: correct ? "Correct!" : "Wrong!",
-          description: correct ? "You got it right!" : "You got it wrong! Try again.",
+          description: correct
+            ? "You got it right!"
+            : "You got it wrong! Try again.",
           status: correct ? "success" : "error",
           duration: 5000,
           isClosable: true,
@@ -86,6 +88,7 @@ export const TakeTRat = () => {
           selected={selected}
           setSelected={setSelected}
           onSubmit={onSubmit}
+          publishSelected={publishSelected}
         ></TRatCard>
       </Container>
     );

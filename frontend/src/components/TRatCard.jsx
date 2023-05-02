@@ -20,7 +20,7 @@ export const TRatCard = (props) => {
 
   useEffect(() => {
     const sub = watch((data) => {
-      props.setSelected(data.answer);
+      props.publishSelected(data.answer);
     });
 
     return () => {
