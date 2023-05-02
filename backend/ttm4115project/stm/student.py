@@ -95,6 +95,11 @@ class StudentStm(MachineBase):
             ),
             # Help transitions
             Transition(
+                source="s_student_idle",
+                target="s_student_require_help",
+                trigger="message_request_help",
+            ),
+            Transition(
                 source="s_student_rat",
                 target="s_student_require_help",
                 trigger="message_request_help",
@@ -112,13 +117,13 @@ class StudentStm(MachineBase):
             Transition(
                 source="s_student_require_help",
                 trigger="system_request_completed",
-                targets="s_student_rat s_team_rat",
+                targets="s_student_idle s_student_rat s_team_rat",
                 function=self.request_completed,
             ),
             Transition(
                 source="s_student_require_help",
                 trigger="message_request_cancel",
-                targets="s_student_rat s_team_rat",
+                targets="s_student_idle s_student_rat s_team_rat",
                 function=self.cancel_help_request,
             ),
         ]
