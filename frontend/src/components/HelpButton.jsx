@@ -61,10 +61,14 @@ const HelpButton = () => {
             queuePositionData?.position ?? "?"
           } in the queue`}
         >
-          <Button onClick={cancelHelp}>Cancel Help Request</Button>
+          <Button m={2} onClick={cancelHelp} colorScheme="teal">
+            Cancel Help Request
+          </Button>
         </Tooltip>
       ) : (
-        <Button onClick={requestHelp}>Request Help</Button>
+        <Button m={2} onClick={requestHelp} colorScheme="teal">
+          Request Help
+        </Button>
       )}
     </div>
   );

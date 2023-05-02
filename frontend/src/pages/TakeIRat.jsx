@@ -57,7 +57,6 @@ export const TakeRat = () => {
 
   return (
     <Container marginTop={10}>
-      <HelpButton />
       <RatCard
         ratType={"Individual"}
         sporsmaal={sporsmaal}

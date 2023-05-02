@@ -14,8 +14,6 @@ import { CLIENT } from "../utils/client";
 
 export const StudentHome = () => {
   const navigate = useNavigate();
-  const [isHelpRequested, setHelpRequested] = useState(false);
-  const [qNum, setqNum] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -24,10 +22,8 @@ export const StudentHome = () => {
     const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
-
-      if (res.event === "queue_update") {
-        setqNum(res.data.position);
-      } else if (res.event === "session_created") {
+      
+      if (res.event === "session_created") {
         CLIENT.unsubscribe("ttm4115project/sessions/outbound");
 
         localStorage.setItem("inbound", res.data.topic_inbound);
@@ -65,24 +61,6 @@ export const StudentHome = () => {
     }
   }, [isAuthenticated]);
 
-  const onRequestHelp = () => {
-    if (isHelpRequested) {
-      console.log("Help already requested");
-      return;
-    }
-
-    const helpData = {
-      event: "request_help",
-      data: {
-        student: localStorage.getItem("User"),
-        team: localStorage.getItem("TeamNumber"),
-      },
-    };
-    console.log("help");
-    CLIENT.publish(localStorage.getItem("inbound"), JSON.stringify(helpData));
-    setHelpRequested(true);
-  };
-
   const startRat = () => {
     // get the RAT
     navigate("/takerat");
@@ -102,30 +80,6 @@ export const StudentHome = () => {
             <Button onClick={startRat} colorScheme={"blue"}>
               Take RAT
             </Button>
-            {/* no need to input reason */}
-            <Button onClick={onRequestHelp} colorScheme={"teal"}>
-              Request help
-            </Button>
-            {isHelpRequested && (
-              <Card
-                backgroundColor={"orange.50"}
-                p={10}
-                variant={"elevated"}
-                shadow={"xl"}
-              >
-                <Stack align={"center"}>
-                  <Heading color={"gray.700"} size={"md"}>
-                    {" "}
-                    You are number
-                  </Heading>
-                  <Heading color={"orange"}> {qNum}</Heading>
-                  <Heading color={"gray.700"} size={"md"}>
-                    {" "}
-                    in line
-                  </Heading>
-                </Stack>
-              </Card>
-            )}
           </VStack>
         </CardBody>
       </Card>
