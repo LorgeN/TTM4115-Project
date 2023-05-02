@@ -1,39 +1,12 @@
-import { Container } from "@chakra-ui/react";
+import { Container, list } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import mqtt from "precompiled-mqtt";
-import { createClient } from "../utils/client";
 import HelpButton from "../components/HelpButton";
+import { CLIENT } from "../utils/client";
 
 export const TakeRat = () => {
-  /*const sporsmaal = {
-    "questions": [
-      {
-        "question": "This is a question",
-        "answers": [
-          "This is answer 1",
-          "This is answer 2",
-          "This is answer 3",
-          "This is answer 4 (CORRECT)"
-        ],
-        "correct_answer": 3
-      },
-      {
-        "question": "This is a question",
-        "answers": [
-          "This is answer 1",
-          "This is answer 2",
-          "This is answer 3",
-          "This is answer 4 (CORRECT)"
-        ],
-        "correct_answer": 3
-      }
-    ]
-  }; */ // dette er hardkodet JSON, kunne like gjerne vært fra mqtt
-
   const navigate = useNavigate();
-  const [client] = useState(createClient());
   const [data, setData] = useState(); //data fra RAT
   const [sporsmaal, setSporsmaal] = useState();
 
@@ -44,10 +17,10 @@ export const TakeRat = () => {
 
     console.log(data);
 
-    client.publish(
+    CLIENT.publish(
       localStorage.getItem("inbound"),
       JSON.stringify({ event: "question_answer", data: { answers: data } }),
-      1,
+      0,
       (error) => {
         if (error) {
           console.log("Publish error: ", error);
@@ -59,32 +32,28 @@ export const TakeRat = () => {
   }, [data]);
 
   useEffect(() => {
-    client.on("message", (topic, message) => {
+    CLIENT.publish(
+      localStorage.getItem("inbound"),
+      JSON.stringify({ event: "start_rat" }),
+      1,
+      () => {}
+    );
+
+    const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
 
       if (res.event === "questions") {
         setSporsmaal(res.data);
       }
-    });
+    };
 
-    client.on("connect", () => {
-      console.log("connected");
-      client.subscribe(localStorage.getItem("outbound"), "0");
-      client.publish(
-        localStorage.getItem("inbound"),
-        JSON.stringify({ event: "start_rat" }),
-        1,
-        () => {}
-      );
-    });
+    CLIENT.on("message", listener);
 
     return () => {
-      if (client) {
-        client.end();
-      }
+      CLIENT.removeListener("message", listener);
     };
-  }, [client]);
+  }, []);
 
   return (
     <Container marginTop={10}>

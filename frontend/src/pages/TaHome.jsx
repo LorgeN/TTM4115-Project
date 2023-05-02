@@ -3,15 +3,17 @@ import {
   CardHeader,
   CardBody,
   Container,
-  CardFooter,
   useDisclosure,
   Button,
   Center,
+  VStack,
+  Divider
 } from "@chakra-ui/react";
 import { AssistanceQ } from "../components/AssistanceQ";
 import { AddRatModal } from "../components/AddRatModal";
+import { ManageRats } from "../components/ManageRats"
 import { useState, useEffect } from "react";
-import { createClient } from "../utils/client";
+import { CLIENT } from "../utils/client";
 
 export const TaHome = () => {
   const {
@@ -19,36 +21,37 @@ export const TaHome = () => {
     onOpen: onAddOpen,
     onClose: onAddClose,
   } = useDisclosure();
-  const [client] = useState(createClient());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [helpRequest, setHelpRequest] = useState();
   const [queueLength, setQueueLength] = useState(0);
+  const [showAdm, setShowAdm] = useState(false)
 
   useEffect(() => {
-    client.on("message", (topic, message) => {
+    CLIENT.subscribe("ttm4115project/sessions/outbound", 0);
+
+    const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
 
       if (res.event === "facilitator_session_created") {
-        localStorage.setItem(
-          "inbound",
-          "ttm4115project/" + res.data.topic_inbound
-        );
-        const outbound = "ttm4115project/" + res.data.topic_outbound;
+        localStorage.setItem("inbound", res.data.topic_inbound);
+        const outbound = res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
-        client.subscribe(outbound, "0");
+        CLIENT.subscribe(outbound, "0");
       } else if (res.event === "request_accepted") {
         setHelpRequest(res.data);
       } else if (res.event === "num_requests") {
         setQueueLength(res.data);
       }
-    });
+    };
 
-    client.on("connect", () => {
-      console.log("connect");
-      client.subscribe("ttm4115project/sessions/outbound", 0);
-    });
-  }, [client]);
+    CLIENT.on("message", listener);
+
+    return () => {
+      CLIENT.unsubscribe("ttm4115project/sessions/outbound");
+      CLIENT.removeListener("message", listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -61,39 +64,61 @@ export const TaHome = () => {
         },
       };
       console.log(authData);
-      client.publish(
+      CLIENT.publish(
         "ttm4115project/sessions/inbound",
         JSON.stringify(authData),
         0
       );
       setIsAuthenticated(true);
     }
-  }, [client, isAuthenticated]);
+  }, [isAuthenticated]);
 
   return (
-    <Container maxW={"4xl"} marginTop={"50"}>
+    <Container
+      maxW={"4xl"}
+      marginTop={"50"}
+    >
       <Card>
         <CardHeader></CardHeader>
-        <CardBody paddingBottom={20}>
-          <AssistanceQ client={client} helpRequest={helpRequest} setHelpRequest={setHelpRequest} queueLength={queueLength}></AssistanceQ>
-        </CardBody>
-        <Center paddingBottom={10}>
-          <Button
-            rounded={"full"}
-            px={6}
-            colorScheme={"orange"}
-            bg={"orange.400"}
-            _hover={{ bg: "orange.500" }}
-            onClick={() => onAddOpen()}
-          >
-            Create new RAT
-          </Button>
-          <AddRatModal
-            isOpen={isAddOpen}
-            onOpen={onAddOpen}
-            onClose={onAddClose}
-          ></AddRatModal>
+        <CardBody >
+          <AssistanceQ
+            helpRequest={helpRequest}
+            setHelpRequest={setHelpRequest}
+            queueLength={queueLength}
+          ></AssistanceQ>
+
+        <Divider py={5}/>
+        <Center py={10}>
+          <VStack>
+            <Button
+              rounded={"full"}
+              px={6}
+              colorScheme={"orange"}
+              bg={"orange.400"}
+              _hover={{ bg: "orange.500" }}
+              onClick={() => onAddOpen()}
+            >
+              Create new RAT
+            </Button>
+            <AddRatModal
+              isOpen={isAddOpen}
+              onOpen={onAddOpen}
+              onClose={onAddClose}
+            ></AddRatModal>
+            <Button
+              rounded={"full"}
+              px={6}
+              colorScheme={"orange"}
+              bg={"blue.400"}
+              _hover={{ bg: "blue.500" }}
+              onClick={() => setShowAdm(!showAdm)}
+            >
+              {showAdm?("Hide"):"Manage RATs"}
+            </Button>
+          </VStack>
         </Center>
+            {showAdm && <ManageRats></ManageRats>}
+        </CardBody>
       </Card>
     </Container>
   );
