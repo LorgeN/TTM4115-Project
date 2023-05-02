@@ -1,14 +1,104 @@
 {
   "questions": [
     {
-      "question": "This is a question",
+      "question": "What is the # topic used for?",
       "answers": [
-        "This is answer 1",
-        "This is answer 2",
-        "This is answer 3",
-        "This is answer 4 (CORRECT)"
+        "Is used as a wildcard for several levels",
+        "It is used as a wildcard for a single level",
+        "It is used to get only the top level",
+        "t is used to get only the bottom level"
+      ],
+      "correct_answer": 0
+    },
+    {
+      "question": "What is QoS 1?",
+      "answers": [
+        "At most once. The message can get lost, and there will be no attempts to resend it.",
+        "At least once. This means that the message will be eventually received, but that several copies of the message may appear due to duplication. The receiver has to detect any such duplicates.",
+        "Exactly once. This guarantees the delivery and avoids any duplication.",
+        "Never. The message will never be sent"
+      ],
+      "correct_answer": 1
+    },
+    {
+      "question": "When was MQTT invented?",
+      "answers": [
+        "2019",
+        "2012",
+        "1999",
+        "1982"
+      ],
+      "correct_answer": 2
+    },
+    {
+      "question": "Which of these is not a part of MQTT?",
+      "answers": [
+        "Broker",
+        "Publisher",
+        "Subscriber",
+        "Interceptor"
       ],
       "correct_answer": 3
+    },
+    {
+      "question": "What is the # topic used for?",
+      "answers": [
+        "Is used as a wildcard for several levels",
+        "It is used as a wildcard for a single level",
+        "It is used to get only the top level",
+        "t is used to get only the bottom level"
+      ],
+      "correct_answer": 0
+    },
+    {
+      "question": "What is QoS 1?",
+      "answers": [
+        "At most once. The message can get lost, and there will be no attempts to resend it.",
+        "At least once. This means that the message will be eventually received, but that several copies of the message may appear due to duplication. The receiver has to detect any such duplicates.",
+        "Exactly once. This guarantees the delivery and avoids any duplication.",
+        "Never. The message will never be sent"
+      ],
+      "correct_answer": 1
+    },
+    {
+      "question": "When was MQTT invented?",
+      "answers": [
+        "2019",
+        "2012",
+        "1999",
+        "1982"
+      ],
+      "correct_answer": 2
+    },
+    {
+      "question": "Which of these is not a part of MQTT?",
+      "answers": [
+        "Broker",
+        "Publisher",
+        "Subscriber",
+        "Interceptor"
+      ],
+      "correct_answer": 3
+    },
+    {
+      "question": "Which of these is not a part of MQTT?",
+      "answers": [
+        "Broker",
+        "Publisher",
+        "Subscriber",
+        "Interceptor"
+      ],
+      "correct_answer": 3
+    },
+    {
+      "question": "What is the # topic used for?",
+      "answers": [
+        "Is used as a wildcard for several levels",
+        "It is used as a wildcard for a single level",
+        "It is used to get only the top level",
+        "t is used to get only the bottom level"
+      ],
+      "correct_answer": 0
     }
   ]
 }
