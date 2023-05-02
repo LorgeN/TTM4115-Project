@@ -43,8 +43,8 @@ const HelpButton = () => {
       clearRequestComplete();
 
       toast({
-        title: "Help request complete",
-        description: "Your request was marked as complete by a TA",
+        title: "Help request seen",
+        description: "A TA is on their way to help you",
         status: "info",
         duration: 10000,
         isClosable: true,
