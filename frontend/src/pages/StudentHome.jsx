@@ -28,11 +28,8 @@ export const StudentHome = () => {
       if (res.event === "queue_update") {
         setqNum(res.data.position);
       } else if (res.event === "session_created") {
-        localStorage.setItem(
-          "inbound",
-          "ttm4115project/" + res.data.topic_inbound
-        );
-        const outbound = "ttm4115project/" + res.data.topic_outbound;
+        localStorage.setItem("inbound", res.data.topic_inbound);
+        const outbound = res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
         CLIENT.subscribe(outbound, "0");
       }

@@ -56,7 +56,7 @@ export const TRatCard = (props) => {
                         {...register("answer")}
                         value={i.toString()}
                         key={i}
-                        isDisabled={props.question.previous_answers.includes(i.toString())}
+                        isDisabled={props.question.previous_answers.includes(i)}
                       >
                         {alt}
                       </Radio>

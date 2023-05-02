@@ -88,7 +88,8 @@ class StudentTeamStm(MachineBase):
         )
 
     def process_answer(self, answer: int):
-        self.current_answer = answer
+        self.current_answer = int(answer)
+        LOGGER.debug(f"Received answer {answer}")
 
         self.handle.publish(
             MQTTMessage(

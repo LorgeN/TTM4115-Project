@@ -30,11 +30,8 @@ export const TaHome = () => {
       console.log(res);
 
       if (res.event === "facilitator_session_created") {
-        localStorage.setItem(
-          "inbound",
-          "ttm4115project/" + res.data.topic_inbound
-        );
-        const outbound = "ttm4115project/" + res.data.topic_outbound;
+        localStorage.setItem("inbound", res.data.topic_inbound);
+        const outbound = res.data.topic_outbound;
         localStorage.setItem("outbound", outbound);
         CLIENT.subscribe(outbound, "0");
       } else if (res.event === "request_accepted") {
