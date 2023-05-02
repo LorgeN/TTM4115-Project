@@ -30,5 +30,11 @@ const useEvent = (event) => {
     );
   };
 
-  return eventData, publishEvent;
+  const clearEvent = () => {
+    setEventData(undefined);
+  };
+
+  return { eventData, publishEvent, clearEvent };
 };
+
+export default useEvent;

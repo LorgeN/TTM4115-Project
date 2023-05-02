@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import mqtt from "precompiled-mqtt";
 import { createClient } from "../utils/client";
+import HelpButton from "../components/HelpButton";
 
 export const TakeRat = () => {
   /*const sporsmaal = {
@@ -87,6 +88,7 @@ export const TakeRat = () => {
 
   return (
     <Container marginTop={10}>
+      <HelpButton />
       <RatCard
         ratType={"Individual"}
         sporsmaal={sporsmaal}
