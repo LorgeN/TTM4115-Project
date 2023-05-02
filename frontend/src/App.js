@@ -6,7 +6,7 @@ import { TakeIRat } from "./pages/TakeIRat";
 import { TakeTRat } from "./pages/TakeTRat";
 import { StudentHome } from "./pages/StudentHome";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { WaitingRoom } from "./pages/WaitingRoom";
+import { RatComplete } from "./pages/RatComplete";
 import { Login } from "./pages/Login";
 /*import { Connection } from './pages/MQTTExperiment';*/
 import { TaHome } from "./pages/TaHome";
@@ -25,7 +25,7 @@ function App() {
             <Route path="/taHome" element={<TaHome />} />
             <Route path="takeirat" element={<TakeIRat />} />
             <Route path="taketrat" element={<TakeTRat />} />
-            <Route path="waitingroom" element={<WaitingRoom />} />
+            <Route path="ratcomplete" element={<RatComplete />} />
           </Route>
         </Routes>
       </BrowserRouter>

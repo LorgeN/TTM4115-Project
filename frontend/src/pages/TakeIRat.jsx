@@ -1,8 +1,7 @@
-import { Container, list } from "@chakra-ui/react";
+import { Container } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import HelpButton from "../components/HelpButton";
 import { CLIENT } from "../utils/client";
 
 export const TakeIRat = () => {

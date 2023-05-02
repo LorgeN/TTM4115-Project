@@ -61,6 +61,8 @@ export const TakeTRat = () => {
           duration: 5000,
           isClosable: true,
         });
+      } else if (res.event === "rat_complete") {
+        navigate("/ratcomplete");
       }
     };
 
