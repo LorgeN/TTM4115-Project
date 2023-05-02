@@ -66,6 +66,7 @@ export const Login = () => {
                     variant={"outline"}
                     colorScheme="orange"
                     onClick={() => handleStudentLogin(team)}
+                    key={team}
                   >
                     {team}
                   </Button>

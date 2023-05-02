@@ -31,14 +31,11 @@ export const RatCard = (props) => {
     }
   }, [isTimerExpired]);
 
-  // TODO: replace dummydata
-  let name = "RAT 7: sequence diagrams";
   const navigate = useNavigate();
 
   const onSubmit = (formData) => {
     const fixedFormData = formData.answers.map((i) => parseInt(i, 10));
-    props.setData(fixedFormData);
-    console.log(fixedFormData);
+    props.onSubmit(fixedFormData);
   };
 
   const getTime = () => {
@@ -46,45 +43,43 @@ export const RatCard = (props) => {
     const time = new Date();
     return time.setSeconds(time.getSeconds() + 1200);
   };
-  console.log(props.sporsmaal);
+  console.log(props.questions);
   return (
     <Card>
       <CardHeader>
-        <Heading size="md">{name}</Heading>
-        <Text>{props.ratType} RAT</Text>
+        <Heading size="md">RAT</Heading>
+        <Text>Individual RAT</Text>
         <CountdownTimer
           targetDate={getTime()}
           setIsTimerExpired={setIsTimerExpired}
         ></CountdownTimer>
       </CardHeader>
-      {props.sporsmaal && (
+      {props.questions && (
         <form onSubmit={handleSubmit(onSubmit)}>
-          {props.sporsmaal &&
-            props.sporsmaal.map((question, i) => {
-              console.log(question);
-              return (
-                <CardBody>
-                  <Stack divider={<StackDivider />} spacing="4">
-                    <Box>
-                      <Text>{question.question}</Text>
-                      <RadioGroup>
-                        <Stack py={2}>
-                          {question.answers.map((alt, j) => (
-                            <Radio
-                              {...register("answers." + i)}
-                              value={j.toString()}
-                              key={j}
-                            >
-                              {alt}
-                            </Radio>
-                          ))}
-                        </Stack>
-                      </RadioGroup>
-                    </Box>
-                  </Stack>
-                </CardBody>
-              );
-            })}
+          {props.questions.map((question, i) => {
+            return (
+              <CardBody key={i}>
+                <Stack divider={<StackDivider />} spacing="4">
+                  <Box>
+                    <Text>{question.question}</Text>
+                    <RadioGroup>
+                      <Stack py={2}>
+                        {question.answers.map((alt, j) => (
+                          <Radio
+                            {...register("answers." + i)}
+                            value={j.toString()}
+                            key={j}
+                          >
+                            {alt}
+                          </Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </Box>
+                </Stack>
+              </CardBody>
+            );
+          })}
           <CardFooter>
             <Stack direction={"row"} spacing={2}>
               <Button type="submit" colorScheme="blue">

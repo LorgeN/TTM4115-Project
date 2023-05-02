@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardBody,
   Heading,
-  Stack,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,7 @@ export const StudentHome = () => {
     const listener = (topic, message) => {
       const res = JSON.parse(message);
       console.log(res);
-      
+
       if (res.event === "session_created") {
         CLIENT.unsubscribe("ttm4115project/sessions/outbound");
 

@@ -9,6 +9,7 @@ export const TakeTRat = () => {
   const [started, setStarted] = useState(false);
   const [question, setQuestion] = useState();
   const [selected, setSelected] = useState();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const toast = useToast();
 
   const onSubmit = () => {
@@ -61,6 +62,10 @@ export const TakeTRat = () => {
           duration: 5000,
           isClosable: true,
         });
+
+        if (correct) {
+          setCurrentQuestion((curr) => curr + 1);
+        }
       } else if (res.event === "rat_complete") {
         navigate("/ratcomplete");
       }
@@ -88,6 +93,7 @@ export const TakeTRat = () => {
       <Container marginTop={10}>
         <TRatCard
           question={question}
+          currentQuestion={currentQuestion}
           selected={selected}
           setSelected={setSelected}
           onSubmit={onSubmit}

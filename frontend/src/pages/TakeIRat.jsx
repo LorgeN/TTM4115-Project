@@ -1,4 +1,4 @@
-import { Container } from "@chakra-ui/react";
+import { Container, useToast } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,29 +6,36 @@ import { CLIENT } from "../utils/client";
 
 export const TakeIRat = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState(); //data fra RAT
-  const [sporsmaal, setSporsmaal] = useState();
+  const toast = useToast();
+  const [questions, setQuestions] = useState();
 
-  useEffect(() => {
-    if (!data) {
+  const onSubmit = (answers) => {
+    if (answers.some((x) => isNaN(x))) {
+      toast({
+        title: "Missing answers!",
+        description: "One or more questions have not been answered.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
 
-    console.log(data);
+    console.log(answers);
 
     CLIENT.publish(
       localStorage.getItem("inbound"),
-      JSON.stringify({ event: "question_answer", data: { answers: data } }),
+      JSON.stringify({ event: "question_answer", data: { answers } }),
       0,
       (error) => {
         if (error) {
-          console.log("Publish error: ", error);
+          console.log("Publish error:", error);
         } else {
           navigate("/taketrat");
         }
       }
     );
-  }, [data]);
+  };
 
   useEffect(() => {
     CLIENT.publish(
@@ -43,7 +50,7 @@ export const TakeIRat = () => {
       console.log(res);
 
       if (res.event === "questions") {
-        setSporsmaal(res.data);
+        setQuestions(res.data);
       }
     };
 
@@ -56,11 +63,7 @@ export const TakeIRat = () => {
 
   return (
     <Container marginTop={10}>
-      <RatCard
-        ratType={"Individual"}
-        sporsmaal={sporsmaal}
-        setData={setData}
-      ></RatCard>
+      <RatCard questions={questions} onSubmit={onSubmit}></RatCard>
     </Container>
   );
 };

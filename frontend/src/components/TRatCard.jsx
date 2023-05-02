@@ -31,8 +31,8 @@ export const TRatCard = (props) => {
   return (
     <Card>
       <CardHeader>
-        <Heading size="md">Team RAT</Heading>
-        <Text fontSize={"lg"}>{props.ratType} RAT</Text>
+        <Heading size="md">RAT</Heading>
+        <Text fontSize={"lg"}>Team RAT</Text>
         <Text fontSize={"sm"} color={"gray.500"}>
           Question {props.currentQuestion + 1}
         </Text>
