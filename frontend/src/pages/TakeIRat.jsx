@@ -2,6 +2,7 @@ import { Container, list } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import HelpButton from "../components/HelpButton";
 import { CLIENT } from "../utils/client";
 
 export const TakeRat = () => {
@@ -56,6 +57,7 @@ export const TakeRat = () => {
 
   return (
     <Container marginTop={10}>
+      <HelpButton />
       <RatCard
         ratType={"Individual"}
         sporsmaal={sporsmaal}

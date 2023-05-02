@@ -8,6 +8,7 @@ const useEvent = (event) => {
     const listener = (topic, message) => {
       const res = JSON.parse(message);
 
+      console.log("Received event: ", res, " listening for: ", event);
       if (res.event === event) {
         setEventData(res.data);
       }
@@ -30,5 +31,11 @@ const useEvent = (event) => {
     );
   };
 
-  return eventData, publishEvent;
+  const clearEvent = () => {
+    setEventData(undefined);
+  };
+
+  return { eventData, publishEvent, clearEvent };
 };
+
+export default useEvent;

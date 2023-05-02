@@ -195,6 +195,7 @@ class StudentStm(MachineBase):
         return self.return_to_rat_state()
 
     def request_completed(self) -> str:
+        self.handle.publish(MQTTMessage(event="help_request_completed"))
         return self.return_to_rat_state()
 
     def return_to_rat_state(self) -> str:
