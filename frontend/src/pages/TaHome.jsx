@@ -6,9 +6,12 @@ import {
   useDisclosure,
   Button,
   Center,
+  VStack,
+  Divider
 } from "@chakra-ui/react";
 import { AssistanceQ } from "../components/AssistanceQ";
 import { AddRatModal } from "../components/AddRatModal";
+import { ManageRats } from "../components/ManageRats"
 import { useState, useEffect } from "react";
 import { CLIENT } from "../utils/client";
 
@@ -21,6 +24,7 @@ export const TaHome = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [helpRequest, setHelpRequest] = useState();
   const [queueLength, setQueueLength] = useState(0);
+  const [showAdm, setShowAdm] = useState(false)
 
   useEffect(() => {
     CLIENT.subscribe("ttm4115project/sessions/outbound", 0);
@@ -73,33 +77,51 @@ export const TaHome = () => {
   }, [isAuthenticated]);
 
   return (
-    <Container maxW={"4xl"} marginTop={"50"}>
+    <Container
+      maxW={"4xl"}
+      marginTop={"50"}
+    >
       <Card>
         <CardHeader></CardHeader>
-        <CardBody paddingBottom={20}>
+        <CardBody >
           <AssistanceQ
             helpRequest={helpRequest}
             setHelpRequest={setHelpRequest}
             queueLength={queueLength}
           ></AssistanceQ>
-        </CardBody>
-        <Center paddingBottom={10}>
-          <Button
-            rounded={"full"}
-            px={6}
-            colorScheme={"orange"}
-            bg={"orange.400"}
-            _hover={{ bg: "orange.500" }}
-            onClick={() => onAddOpen()}
-          >
-            Create new RAT
-          </Button>
-          <AddRatModal
-            isOpen={isAddOpen}
-            onOpen={onAddOpen}
-            onClose={onAddClose}
-          ></AddRatModal>
+
+        <Divider py={5}/>
+        <Center py={10}>
+          <VStack>
+            <Button
+              rounded={"full"}
+              px={6}
+              colorScheme={"orange"}
+              bg={"orange.400"}
+              _hover={{ bg: "orange.500" }}
+              onClick={() => onAddOpen()}
+            >
+              Create new RAT
+            </Button>
+            <AddRatModal
+              isOpen={isAddOpen}
+              onOpen={onAddOpen}
+              onClose={onAddClose}
+            ></AddRatModal>
+            <Button
+              rounded={"full"}
+              px={6}
+              colorScheme={"orange"}
+              bg={"blue.400"}
+              _hover={{ bg: "blue.500" }}
+              onClick={() => setShowAdm(!showAdm)}
+            >
+              {showAdm?("Hide"):"Manage RATs"}
+            </Button>
+          </VStack>
         </Center>
+            {showAdm && <ManageRats></ManageRats>}
+        </CardBody>
       </Card>
     </Container>
   );
