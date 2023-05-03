@@ -1,33 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { CLIENT } from "./client";
+import { useClient } from "./useClient";
 
 const useEvent = (event) => {
   const [eventData, setEventData] = useState(undefined);
+  const { client, publish } = useClient();
 
   useEffect(() => {
+    if (!client) {
+      return;
+    }
+
     const listener = (topic, message) => {
       const res = JSON.parse(message);
 
       if (res.event === event) {
-        setEventData(res.data);
+        setEventData(res.data ?? {}); // Make sure its not undefined if we have received the event
       }
     };
 
-    CLIENT.on("message", listener);
+    client.on("message", listener);
 
     return () => {
-      CLIENT.removeListener("message", listener);
+      client.removeListener("message", listener);
     };
-  }, [event]);
+  }, [client, event]);
 
   const publishEvent = (value) => {
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({
-        event: event,
-        data: value,
-      })
-    );
+    publish({
+      event: event,
+      data: value,
+    });
   };
 
   const clearEvent = () => {

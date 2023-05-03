@@ -11,21 +11,25 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "../utils/useSession";
 
 export const Login = () => {
   const navigate = useNavigate();
+  const { setTeam, setName, setScope } = useSession();
   const teams = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
   const handleStudentLogin = (team) => {
     const name = prompt("Enter your name");
-    localStorage.setItem("TeamNumber", team);
-    localStorage.setItem("User", name);
+    setTeam(team);
+    setName(name);
+    setScope("student");
     navigate("/studenthome");
   };
 
   const handleFacilitatorLogin = () => {
     const name = prompt("Enter your name");
-    localStorage.setItem("User", name);
+    setName(name);
+    setScope("facilitator");
     navigate("/tahome");
   };
 

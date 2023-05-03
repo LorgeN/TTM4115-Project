@@ -1,27 +1,60 @@
 import { Container, Card, Stack, Heading, useToast } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TRatCard } from "../components/TRatCard";
-import { CLIENT } from "../utils/client";
+import { useClient } from "../utils/useClient";
 
 export const TakeTRat = () => {
   const navigate = useNavigate();
-  const [started, setStarted] = useState(false);
-  const [question, setQuestion] = useState();
   const [selected, setSelected] = useState();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const toast = useToast();
+  const { publish } = useClient();
+
+  const { eventData: teamRatStarted } = useEvent("start_team_rat");
+  const { started } = useCallback(
+    (teamRatStarted) => !!teamRatStarted,
+    [teamRatStarted]
+  );
+
+  const { eventData: question } = useEvent("new_question");
+  useEffect(() => setSelected(undefined), [question]);
+
+  const { eventData: answerSelect } = useEvent("question_answer_select");
+  useEffect(() => setSelected(answerSelect.answer), [answerSelect]);
+
+  const { eventData: answerConfirm } = useEvent("question_answer_confirm");
+  useEffect(() => {
+    const correct = answerConfirm.is_correct;
+
+    toast({
+      title: correct ? "Correct!" : "Wrong!",
+      description: correct
+        ? "You got it right!"
+        : "You got it wrong! Try again.",
+      status: correct ? "success" : "error",
+      duration: 5000,
+      isClosable: true,
+    });
+
+    if (correct) {
+      setCurrentQuestion((curr) => curr + 1);
+    }
+  }, [answerConfirm]);
+
+  const { eventData: ratComplete } = useEvent("rat_complete");
+  useEffect(() => {
+    if (ratComplete) {
+      navigate("/studenthome");
+    }
+  }, [ratComplete]);
 
   const onSubmit = () => {
     if (selected === undefined || selected === null) {
       return;
     }
 
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({ event: "answer_confirmed" }),
-      0
-    );
+    publish({ event: "answer_confirmed" });
   };
 
   const publishSelected = (newSelected) => {
@@ -29,54 +62,11 @@ export const TakeTRat = () => {
       return;
     }
 
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({
-        event: "question_answer",
-        data: { answer: newSelected },
-      }),
-      0
-    );
+    publish({
+      event: "question_answer",
+      data: { answer: newSelected },
+    });
   };
-
-  useEffect(() => {
-    const listener = (topic, message) => {
-      const res = JSON.parse(message);
-      console.log(res);
-
-      if (res.event === "start_team_rat") {
-        setStarted(true);
-      } else if (res.event === "new_question") {
-        setQuestion(res.data);
-        setSelected(undefined);
-      } else if (res.event === "question_answer_select") {
-        setSelected(res.data.answer);
-      } else if (res.event === "question_answer_confirm") {
-        const correct = res.data.is_correct;
-        toast({
-          title: correct ? "Correct!" : "Wrong!",
-          description: correct
-            ? "You got it right!"
-            : "You got it wrong! Try again.",
-          status: correct ? "success" : "error",
-          duration: 5000,
-          isClosable: true,
-        });
-
-        if (correct) {
-          setCurrentQuestion((curr) => curr + 1);
-        }
-      } else if (res.event === "rat_complete") {
-        navigate("/ratcomplete");
-      }
-    };
-
-    CLIENT.on("message", listener);
-
-    return () => {
-      CLIENT.removeListener("message", listener);
-    };
-  }, []);
 
   if (!started) {
     return (

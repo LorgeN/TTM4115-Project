@@ -1,13 +1,15 @@
 import { Container, useToast } from "@chakra-ui/react";
 import { RatCard } from "../components/IRatCard";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CLIENT } from "../utils/client";
+import { useClient } from "../utils/useClient";
+import useEvent from "../utils/useEvent";
 
 export const TakeIRat = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const [questions, setQuestions] = useState();
+  const { publish } = useClient();
+  const { eventData } = useEvent("questions");
 
   const onSubmit = (answers) => {
     if (answers.some((x) => isNaN(x))) {
@@ -21,49 +23,20 @@ export const TakeIRat = () => {
       return;
     }
 
-    console.log(answers);
-
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({ event: "question_answer", data: { answers } }),
-      0,
-      (error) => {
-        if (error) {
-          console.log("Publish error:", error);
-        } else {
-          navigate("/taketrat");
-        }
-      }
-    );
+    publish({ event: "question_answer", data: { answers } }, () => {
+      navigate("/taketrat");
+    });
   };
 
   useEffect(() => {
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({ event: "start_rat" }),
-      1,
-      () => {}
-    );
-
-    const listener = (topic, message) => {
-      const res = JSON.parse(message);
-      console.log(res);
-
-      if (res.event === "questions") {
-        setQuestions(res.data);
-      }
-    };
-
-    CLIENT.on("message", listener);
-
-    return () => {
-      CLIENT.removeListener("message", listener);
-    };
+    publish({ event: "start_rat" });
   }, []);
 
   return (
     <Container marginTop={10}>
-      <RatCard questions={questions} onSubmit={onSubmit}></RatCard>
+      {eventData && (
+        <RatCard questions={eventData.questions} onSubmit={onSubmit}></RatCard>
+      )}
     </Container>
   );
 };

@@ -13,7 +13,8 @@ import { AssistanceQ } from "../components/AssistanceQ";
 import { AddRatModal } from "../components/AddRatModal";
 import { ManageRats } from "../components/ManageRats";
 import { useState, useEffect } from "react";
-import { CLIENT } from "../utils/client";
+import { useClient } from "../utils/useClient";
+import useEvent from "../utils/useEvent";
 
 export const TaHome = () => {
   const {
@@ -21,58 +22,11 @@ export const TaHome = () => {
     onOpen: onAddOpen,
     onClose: onAddClose,
   } = useDisclosure();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [helpRequest, setHelpRequest] = useState();
-  const [queueLength, setQueueLength] = useState(0);
   const [showAdm, setShowAdm] = useState(false);
-
-  useEffect(() => {
-    CLIENT.subscribe("ttm4115project/sessions/outbound", 0);
-
-    const listener = (topic, message) => {
-      const res = JSON.parse(message);
-      console.log(res);
-
-      if (res.event === "facilitator_session_created") {
-        CLIENT.unsubscribe("ttm4115project/sessions/outbound");
-
-        localStorage.setItem("inbound", res.data.topic_inbound);
-        const outbound = res.data.topic_outbound;
-        localStorage.setItem("outbound", outbound);
-        CLIENT.subscribe(outbound, "0");
-      } else if (res.event === "request_accepted") {
-        setHelpRequest(res.data);
-      } else if (res.event === "num_requests") {
-        setQueueLength(res.data);
-      }
-    };
-
-    CLIENT.on("message", listener);
-
-    return () => {
-      CLIENT.removeListener("message", listener);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log("authenticating");
-      const authData = {
-        event: "auth",
-        data: {
-          scope: "facilitator",
-          id: localStorage.getItem("User"),
-        },
-      };
-      console.log(authData);
-      CLIENT.publish(
-        "ttm4115project/sessions/inbound",
-        JSON.stringify(authData),
-        0
-      );
-      setIsAuthenticated(true);
-    }
-  }, [isAuthenticated]);
+  const {} = useClient(); // Start auth and such
+  const { eventData: helpRequest, clearEvent: clearHelpRequest } =
+    useEvent("request_accepted");
+  const { eventData: queueLength } = useEvent("num_requests");
 
   return (
     <Container maxW={"4xl"} marginTop={"50"}>
@@ -81,7 +35,7 @@ export const TaHome = () => {
         <CardBody>
           <AssistanceQ
             helpRequest={helpRequest}
-            setHelpRequest={setHelpRequest}
+            clearHelpRequest={clearHelpRequest}
             queueLength={queueLength}
           ></AssistanceQ>
 

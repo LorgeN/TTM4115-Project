@@ -11,26 +11,20 @@ import {
 
 import { CheckIcon } from "@chakra-ui/icons";
 import { StatusCard } from "../components/StatusCard";
-import { CLIENT } from "../utils/client";
+import { useClient } from "../utils/useClient";
 
-export const AssistanceQ = ({ helpRequest, setHelpRequest, queueLength }) => {
+export const AssistanceQ = ({ helpRequest, clearHelpRequest, queueLength }) => {
+  const { publish } = useClient();
+
   const startHelp = () => {
     if (queueLength > 0) {
-      CLIENT.publish(
-        localStorage.getItem("inbound"),
-        JSON.stringify({ event: "request_accept" }),
-        0
-      );
+      publish({ event: "request_accept" });
     }
   };
 
   const finishHelp = () => {
-    CLIENT.publish(
-      localStorage.getItem("inbound"),
-      JSON.stringify({ event: "request_completed" }),
-      0
-    );
-    setHelpRequest(null);
+    publish({ event: "request_completed" });
+    clearHelpRequest();
   };
 
   const helpCard = () => {
@@ -69,7 +63,9 @@ export const AssistanceQ = ({ helpRequest, setHelpRequest, queueLength }) => {
             Queue length: {queueLength}
           </Heading>
         </VStack>
-        {!helpRequest && queueLength>0 && <Button onClick={startHelp}>I want to help</Button>}
+        {!helpRequest && queueLength > 0 && (
+          <Button onClick={startHelp}>I want to help</Button>
+        )}
         {helpRequest && helpCard()}
       </VStack>
       <VStack minW={"50%"}>
